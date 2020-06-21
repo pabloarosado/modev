@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import pickle
+import random
 
 import pandas as pd
 
@@ -22,7 +23,22 @@ def apply_selection_to_data(data, selection):
     return selected_data
 
 
-def load_local_file(data_file, selection=None, **kwargs):
+def count_rows(data_file):
+    with open(data_file) as f:
+        num_rows = sum(1 for line in f)
+    return num_rows
+
+
+def sample_from_big_file(data_file, sample_nrows, random_state=1000, header_nrows=1, **kwargs):
+    total_nrows = count_rows(data_file)
+    random.seed(random_state)
+    indexes_to_skip = random.sample(range(header_nrows, total_nrows + header_nrows + 1),
+                                    total_nrows + header_nrows - sample_nrows)
+    data = pd.read_csv(data_file, skiprows=indexes_to_skip, **kwargs)
+    return data
+
+
+def load_local_file(data_file, selection=None, sample_nrows=None, random_state=1000, **kwargs):
     if not os.path.isfile(data_file):
         logging.error("Data file not found: %s", data_file)
     # Get default args for pd.read_csv.
@@ -32,6 +48,8 @@ def load_local_file(data_file, selection=None, **kwargs):
     if selection is not None:
         # Create a new dataframe (copy) that fulfils selection, while keeping the original indexes (no reset).
         data = apply_selection_to_data(data, selection)
+    if sample_nrows is not None:
+        data = data.sample(sample_nrows, random_state=random_state)
     return data
 
 

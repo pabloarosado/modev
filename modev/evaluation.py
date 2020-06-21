@@ -12,5 +12,7 @@ def evaluate_predictions(raw_true, raw_pred, metrics):
     if 'accuracy' in metrics:
         results['accuracy'] = sklearn.metrics.accuracy_score(true, pred)
     if 'precision' in metrics:
-        results['accuracy'] = sklearn.metrics.precision_score(true, pred)
+        results['precision'] = sklearn.metrics.precision_score(true, pred)
+    if 'recall' in metrics:
+        results['recall'] = sklearn.metrics.recall_score(true, pred)
     return results
