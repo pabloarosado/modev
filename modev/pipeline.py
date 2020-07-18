@@ -16,6 +16,7 @@ class Pipeline:
         self.raw_experiment = self._parse_inputs()
         # Initialise other attributes.
         self.data = None
+        self.indexes = None
 
     def _parse_inputs(self):
         # Load default experiment and overwrite inputs given in raw experiment file.
@@ -35,3 +36,7 @@ class Pipeline:
     def get_data(self):
         self.data = self.raw_experiment['data_function'](**self.raw_experiment['data_pars'])
         return self.data
+
+    def get_indexes(self):
+        self.indexes = self.raw_experiment['validation_function'](**self.raw_experiment['validation_pars'])
+
