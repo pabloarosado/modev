@@ -2,6 +2,7 @@ import logging
 
 from modev import default
 from modev import etl
+from modev import validation
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
@@ -38,5 +39,8 @@ class Pipeline:
         return self.data
 
     def get_indexes(self):
-        self.indexes = self.raw_experiment['validation_function'](**self.raw_experiment['validation_pars'])
-
+        self.indexes = self.raw_experiment['validation_function'](self.data.index,
+                                                                  **self.raw_experiment['validation_pars'])
+        if not validation.validate_indexes(self.indexes):
+            logging.warning("Indexes do not pass validations!")
+        return self.indexes
