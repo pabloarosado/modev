@@ -2,6 +2,7 @@ import logging
 
 from modev import default
 from modev import etl
+from modev import run
 from modev import validation
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
@@ -14,6 +15,7 @@ class Pipeline:
         self.raw_experiment = None
         self.data = None
         self.indexes = None
+        self.done_experiment = None
 
     def get_raw_experiment(self):
         # Load default experiment and overwrite inputs given in raw experiment file.
@@ -26,22 +28,24 @@ class Pipeline:
         return self.raw_experiment
 
     def get_data(self):
-        self.data = self.raw_experiment['load_function'](**self.raw_experiment['load_pars'])
+        if self.data is None:
+            self.data = self.raw_experiment['load_function'](**self.raw_experiment['load_pars'])
         return self.data
 
     def get_indexes(self):
-        self.indexes = self.raw_experiment['validation_function'](self.data.index,
-                                                                  **self.raw_experiment['validation_pars'])
-        if not validation.validate_indexes(self.indexes):
-            logging.warning("Indexes do not pass validations!")
+        if self.indexes is None:
+            self.indexes = self.raw_experiment['validation_function'](self.data.index,
+                                                                      **self.raw_experiment['validation_pars'])
+            if not validation.validate_indexes(self.indexes):
+                logging.warning("Indexes do not pass validations!")
         return self.indexes
 
     def run(self):
-        if self.raw_experiment is None:
-            self.get_raw_experiment()
+        self.get_raw_experiment()
 
-        if self.data is None:
-            self.get_data()
+        self.get_data()
 
-        if self.indexes is None:
-            self.get_indexes()
+        self.get_indexes()
+
+        if self.done_experiment is None:
+            done_experiment = run.run_experiment(self.raw_experiment, self.data, self.indexes)

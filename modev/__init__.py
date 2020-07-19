@@ -1,6 +1,7 @@
+import modev.approaches
 import modev.etl
-import modev.exploration
 import modev.evaluation
+import modev.exploration
 from modev.pipeline import Pipeline
 import modev.plotting
 import modev.selection
