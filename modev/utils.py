@@ -1,4 +1,6 @@
+import importlib
 import logging
+import os
 
 
 def get_usable_kwargs_for_function(function, kwargs):
@@ -11,3 +13,17 @@ def get_usable_kwargs_for_function(function, kwargs):
     if len(unknown_kwargs) > 0:
         logging.warning("Unknown keyword arguments %s", unknown_kwargs)
     return usable_kwargs
+
+
+def import_file_as_module(file_path, module_name=None):
+    """
+    TODO: docstring.
+    https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
+
+    """
+    if module_name is None:
+        module_name = os.path.basename(file_path).split('.')[0]
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod

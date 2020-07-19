@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import pickle
@@ -12,7 +11,10 @@ from modev import utils
 def load_raw_experiment(raw_experiment_file):
     if not os.path.isfile(raw_experiment_file):
         logging.error("Raw experiment file not found: %s", raw_experiment_file)
-    raw_experiment = json.load(open(raw_experiment_file, "r"))
+    raw_experiment_module = utils.import_file_as_module(raw_experiment_file, module_name='raw_experiment')
+    if 'experiment' not in dir(raw_experiment_module):
+        logging.error("Raw experiment file must contain a dictionary called 'experiment'.")
+    raw_experiment = raw_experiment_module.experiment
     return raw_experiment
 
 

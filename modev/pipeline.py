@@ -8,34 +8,25 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=lo
 
 
 class Pipeline:
-    manual_inputs = ['data_function', 'validation_function', 'evaluation_function']
-
-    def __init__(self, raw_experiment_file, **kwargs):
+    def __init__(self, raw_experiment_file):
         self.raw_experiment_file = raw_experiment_file
-        self.kwargs = kwargs
-        # Load default experiment and update it with given inputs.
-        self.raw_experiment = self._parse_inputs()
         # Initialise other attributes.
+        self.raw_experiment = None
         self.data = None
         self.indexes = None
 
-    def _parse_inputs(self):
+    def get_raw_experiment(self):
         # Load default experiment and overwrite inputs given in raw experiment file.
         raw_experiment_inputs = etl.load_raw_experiment(self.raw_experiment_file)
         raw_experiment = default.default_experiment.copy()
         for field in list(raw_experiment):
             if field in raw_experiment_inputs:
                 raw_experiment[field] = raw_experiment_inputs[field]
-        # Overwrite inputs given manually.
-        for kwarg in self.kwargs:
-            if kwarg in self.manual_inputs:
-                raw_experiment[kwarg] = self.kwargs[kwarg]
-            else:
-                logging.warning("Unknown keyword argument: %s", kwarg)
-        return raw_experiment
+        self.raw_experiment = raw_experiment
+        return self.raw_experiment
 
     def get_data(self):
-        self.data = self.raw_experiment['data_function'](**self.raw_experiment['data_pars'])
+        self.data = self.raw_experiment['load_function'](**self.raw_experiment['load_pars'])
         return self.data
 
     def get_indexes(self):
@@ -44,3 +35,13 @@ class Pipeline:
         if not validation.validate_indexes(self.indexes):
             logging.warning("Indexes do not pass validations!")
         return self.indexes
+
+    def run(self):
+        if self.raw_experiment is None:
+            self.get_raw_experiment()
+
+        if self.data is None:
+            self.get_data()
+
+        if self.indexes is None:
+            self.get_indexes()
