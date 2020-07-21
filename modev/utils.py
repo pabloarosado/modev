@@ -27,3 +27,12 @@ def import_file_as_module(file_path, module_name=None):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+def get_text_from_docstring(module):
+    doc = module.__doc__
+    if doc is not None:
+        doc = doc.replace('\n', '')
+    else:
+        doc = ''
+    return doc
