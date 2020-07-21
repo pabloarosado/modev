@@ -2,50 +2,83 @@ import logging
 
 from modev import default
 from modev import etl
-from modev import run
+from modev import execution
+from modev import utils
 from modev import validation
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
 
+def _override_default_experiment(experiment_module, default_experiment_module):
+    # Load default experiment and raw (incomplete) experiment.
+    default_experiment = etl.load_experiment(default_experiment_module)
+    raw_experiment = etl.load_experiment(experiment_module)
+    # Take everything from default experiment and overwrite inputs given in raw experiment.
+    experiment = default_experiment.copy()
+    for field in list(experiment):
+        if field in raw_experiment:
+            experiment[field] = raw_experiment[field]
+    return experiment
+
+
+def _check_requirements(previous_requirements, error_message):
+    if any([requirement is None for requirement in previous_requirements]):
+        logging.error(error_message)
+
+
 class Pipeline:
-    def __init__(self, raw_experiment_file):
-        self.raw_experiment_file = raw_experiment_file
+    def __init__(self, experiment_file):
+        self.experiment_file = experiment_file
         # Initialise other attributes.
-        self.raw_experiment = None
+        self.experiment_module = None
+        self.experiment_description = None
+        self.experiment = None
         self.data = None
         self.indexes = None
-        self.done_experiment = None
+        self.results = None
 
-    def get_raw_experiment(self):
-        # Load default experiment and overwrite inputs given in raw experiment file.
-        raw_experiment_inputs = etl.load_raw_experiment(self.raw_experiment_file)
-        raw_experiment = default.default_experiment.copy()
-        for field in list(raw_experiment):
-            if field in raw_experiment_inputs:
-                raw_experiment[field] = raw_experiment_inputs[field]
-        self.raw_experiment = raw_experiment
-        return self.raw_experiment
+    requirements_error_message = "Methods have to be executed in the following order:" \
+                                 "(1) get_experiment()" \
+                                 "(2) get_data()" \
+                                 "(3) get_indexes()" \
+                                 "(4) get_results()"
 
-    def get_data(self):
-        if self.data is None:
-            self.data = self.raw_experiment['load_function'](**self.raw_experiment['load_pars'])
+    def get_experiment(self, reload=False):
+        _check_requirements([], self.requirements_error_message)
+        if self.experiment is None or reload:
+            self.experiment_module = etl.load_experiment_module(self.experiment_file)
+            self.experiment_description = utils.get_text_from_docstring(self.experiment_module)
+            self.experiment = _override_default_experiment(self.experiment_module, default)
+        return self.experiment
+
+    def get_data(self, reload=False):
+        _check_requirements([self.experiment], self.requirements_error_message)
+        if self.data is None or reload:
+            self.data = self.experiment['load_function'](**self.experiment['load_pars'])
         return self.data
 
-    def get_indexes(self):
-        if self.indexes is None:
-            self.indexes = self.raw_experiment['validation_function'](self.data.index,
-                                                                      **self.raw_experiment['validation_pars'])
+    def get_indexes(self, reload=False):
+        _check_requirements([self.experiment, self.data], self.requirements_error_message)
+        if self.indexes is None or reload:
+            self.indexes = self.experiment['validation_function'](self.data.index,
+                                                                  **self.experiment['validation_pars'])
             if not validation.validate_indexes(self.indexes):
                 logging.warning("Indexes do not pass validations!")
         return self.indexes
 
-    def run(self):
-        self.get_raw_experiment()
+    def get_results(self, reload=False):
+        _check_requirements([self.experiment, self.data], self.requirements_error_message)
+        if self.results is None or reload:
+            self.results = execution.run_experiment(self.experiment, self.data, self.indexes)
+        return self.results
 
-        self.get_data()
+    def run(self, reload=False):
+        self.get_experiment(reload)
 
-        self.get_indexes()
+        self.get_data(reload)
 
-        if self.done_experiment is None:
-            done_experiment = run.run_experiment(self.raw_experiment, self.data, self.indexes)
+        self.get_indexes(reload)
+
+        self.get_results(reload)
+
+        logging.info('Experiment executed successfully')

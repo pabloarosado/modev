@@ -15,12 +15,14 @@ class DummyPredictor:
 
 
 class RandomChoicePredictor:
-    # TODO: take dummy par and predict by picking random point of train set.
-    def __init__(self):
-        pass
+    # Predict target values by randomly picking them from train set.
+    def __init__(self, random_state=1000):
+        self.random_state = random_state
+        self.possible_choices = None
 
     def fit(self, train_x, train_y):
-        pass
+        self.possible_choices = train_y
 
     def predict(self, test_x):
-        pass
+        prediction = np.random.choice(self.possible_choices, len(test_x))
+        return prediction
