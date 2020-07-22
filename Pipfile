@@ -11,6 +11,7 @@ numpy = "*"
 pandas = "*"
 tqdm = "*"
 scikit-learn = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.7"

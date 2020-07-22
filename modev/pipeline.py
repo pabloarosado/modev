@@ -3,6 +3,7 @@ import logging
 from modev import default
 from modev import etl
 from modev import execution
+from modev import plotting
 from modev import utils
 from modev import validation
 
@@ -38,6 +39,7 @@ class Pipeline:
         self.indexes = None
         self.results = None
         self.ranking = None
+        self.main_metric = None
 
     requirements_error_message = "Methods have to be executed in the following order:" \
                                  "(1) get_experiment()" \
@@ -81,6 +83,7 @@ class Pipeline:
     def get_selected_models(self, reload=False):
         _check_requirements([self.experiment, self.data, self.results], self.requirements_error_message)
         if self.ranking is None or reload:
+            self.main_metric = self.experiment['selection_pars']['main_metric']
             self.ranking = self.experiment['selection_function'](self.results, self.metrics,
                                                                  **self.experiment['selection_pars'])
         return self.ranking
@@ -99,3 +102,6 @@ class Pipeline:
         logging.info('Experiment executed successfully')
 
         return self.ranking
+
+    def plot_results(self):
+        plotting.metric_vs_folds(self.results, self.main_metric)

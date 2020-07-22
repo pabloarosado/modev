@@ -22,6 +22,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'pandas',
+        'plotly',
         'scikit-learn',
         'tqdm',
     ],
