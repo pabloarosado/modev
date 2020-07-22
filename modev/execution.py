@@ -1,11 +1,6 @@
 from tqdm.auto import tqdm
 
 
-def _get_folds_from_indexes(indexes, set_name='train_'):
-    folds = [int(fold.split('_')[-1]) for fold in indexes if fold.startswith(set_name)]
-    return folds
-
-
 def _get_train_and_test_sets(data, indexes, fold, test_mode=False):
     if test_mode:
         train_set = data.loc[indexes['playground']]
@@ -29,7 +24,6 @@ def _get_approaches_functions_from_grid(approaches_grid):
 
 def run_experiment(experiment, data, indexes, execution_function):
     # Extract all necessary info from experiment.
-    folds = _get_folds_from_indexes(indexes)
     approaches_grid = experiment['approaches']
     approaches_functions = _get_approaches_functions_from_grid(approaches_grid)
     evaluation_function = experiment['evaluation_function']
@@ -39,6 +33,13 @@ def run_experiment(experiment, data, indexes, execution_function):
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
     exploration_function = experiment['exploration_function']
+    validation_pars = experiment['validation_pars']
+
+    # Get list of folds to execute.
+    if test_mode:
+        folds = list(range(validation_pars['test_n_sets']))
+    else:
+        folds = list(range(validation_pars['playground_n_folds']))
 
     # Initialise parameter space explorer.
     explorer = exploration_function(approaches_grid, folds, metrics)
