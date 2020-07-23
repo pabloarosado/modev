@@ -56,6 +56,7 @@ class Pipeline:
             # TODO: maybe there should be a method 'get_metrics', that ensures field 'metrics' exists.
             #  More generally, there should be a function that checks if experiment is well structured.
             self.metrics = self.experiment['evaluation_pars']['metrics']
+            self.main_metric = self.experiment['selection_pars']['main_metric']
         return self.experiment
 
     def get_data(self, reload=False):
@@ -83,7 +84,6 @@ class Pipeline:
     def get_selected_models(self, reload=False):
         _check_requirements([self.experiment, self.data, self.results], self.requirements_error_message)
         if self.ranking is None or reload:
-            self.main_metric = self.experiment['selection_pars']['main_metric']
             self.ranking = self.experiment['selection_function'](self.results, self.metrics,
                                                                  **self.experiment['selection_pars'])
         return self.ranking
