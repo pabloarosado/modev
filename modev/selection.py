@@ -1,7 +1,9 @@
 import numpy as np
 
+from modev import default_pars
 
-def combine_fold_results(results, metrics, aggregation_method='mean'):
+
+def combine_fold_results(results, metrics, aggregation_method=default_pars.selection_pars_aggregation_method):
     # Combine results for all folds using a certain aggregation method (e.g. mean).
     metrics_agg = {col: aggregation_method for col in metrics}
     # For columns that do not need to be combined, simply take first (since they are identical for all folds).
@@ -18,7 +20,7 @@ def rank_models(combined_results, main_metric):
     return sorted_results
 
 
-def apply_condition_to_dataframe(df, condition=None):
+def apply_condition_to_dataframe(df, condition=default_pars.selection_pars_condition):
     selection = np.ones(len(df), dtype=bool)
     if condition is not None:
         selection = eval(condition)
@@ -27,8 +29,9 @@ def apply_condition_to_dataframe(df, condition=None):
     return df_selected
 
 
-def model_selection(results, metrics, main_metric, aggregation_method='mean', results_condition=None,
-                    combined_results_condition=None):
+def model_selection(results, metrics, main_metric, aggregation_method=default_pars.selection_pars_aggregation_method,
+                    results_condition=default_pars.selection_pars_results_condition,
+                    combined_results_condition=default_pars.selection_pars_combined_results_condition):
     # Apply conditions to results of individual folds.
     results_selected = apply_condition_to_dataframe(results, results_condition)
     # Combine results of different folds.

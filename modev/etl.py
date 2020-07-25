@@ -5,6 +5,7 @@ import random
 
 import pandas as pd
 
+from modev import default_pars
 from modev import utils
 
 
@@ -35,7 +36,8 @@ def count_rows(data_file):
     return num_rows
 
 
-def sample_from_big_file(data_file, sample_nrows, random_state=1000, header_nrows=1, **kwargs):
+def sample_from_big_file(data_file, sample_nrows, random_state=default_pars.random_state,
+                         header_nrows=default_pars.etl_pars_header_nrows, **kwargs):
     total_nrows = count_rows(data_file)
     random.seed(random_state)
     indexes_to_skip = random.sample(range(header_nrows, total_nrows + header_nrows + 1),
@@ -44,7 +46,8 @@ def sample_from_big_file(data_file, sample_nrows, random_state=1000, header_nrow
     return data
 
 
-def load_local_file(data_file, selection=None, sample_nrows=None, random_state=1000, **kwargs):
+def load_local_file(data_file, selection=default_pars.etl_pars_selection,
+                    sample_nrows=default_pars.etl_pars_sample_nrows, random_state=default_pars.random_state, **kwargs):
     if not os.path.isfile(data_file):
         logging.error("Data file not found: %s", data_file)
     # Get default args for pd.read_csv.

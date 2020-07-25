@@ -1,7 +1,9 @@
 from tqdm.auto import tqdm
 
+from modev import default_pars
 
-def _get_train_and_test_sets(data, indexes, fold, test_mode=False):
+
+def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.execution_pars_test_mode):
     if test_mode:
         train_set = data.loc[indexes['playground']]
         test_set = data.loc[indexes[f'test_{fold}']]

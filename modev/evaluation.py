@@ -1,5 +1,6 @@
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+from modev import default_pars
 from modev import utils
 
 # List of kwargs accepted by precision and recall functions from sklearn, and accuracy.
@@ -101,7 +102,7 @@ def metrics_at_k(raw_true, raw_pred, k):
     return results
 
 
-def get_k_from_metric_name(metric_name, num_predictions=None):
+def get_k_from_metric_name(metric_name, num_predictions=default_pars.evaluation_pars_num_predictions):
     """Get value of k from the name of an "@k" metric.
      If metric is, e.g. 'precision_at_10', this function returns 10.
      If metric is, e.g. 'precision_at_5_pct', this function returns 5% of 'num_predictions' (as integer).

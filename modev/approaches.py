@@ -1,5 +1,7 @@
 import numpy as np
 
+from modev import default_pars
+
 
 class DummyPredictor:
     def __init__(self, dummy_prediction):
@@ -56,7 +58,7 @@ class DummyPredictor:
 
 
 class RandomChoicePredictor:
-    def __init__(self, random_state=1000):
+    def __init__(self, random_state=default_pars.random_state):
         """Predict a random value of the target column from the train set.
 
         Parameters

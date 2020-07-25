@@ -1,6 +1,5 @@
-import pkg_resources
-
 from modev import approaches
+from modev import default_pars
 from modev import etl
 from modev import evaluation
 from modev import execution
@@ -8,19 +7,17 @@ from modev import exploration
 from modev import selection
 from modev import validation
 
-example_data_path = pkg_resources.resource_filename(__name__, 'data/example_labeled_data.csv')
 
-random_state = 1000
 # TODO: separate approaches into approaches_function and approaches_pars.
 load_function = etl.load_local_file
-load_pars = {'data_file': example_data_path,
-             'random_state': random_state
+load_pars = {'data_file': default_pars.example_data_path,
+             'random_state': default_pars.random_state
              }
 validation_function = validation.k_fold_playground_n_tests_split
-validation_pars = {'test_fraction': 0.2,
-                   'test_n_sets': 1,
-                   'playground_n_folds': 4,
-                   'random_state': random_state,
+validation_pars = {'test_fraction': default_pars.validation_pars_test_fraction,
+                   'test_n_sets': default_pars.validation_pars_test_n_sets,
+                   'playground_n_folds': default_pars.validation_pars_playground_n_folds,
+                   'random_state': default_pars.random_state,
                    }
 execution_function = execution.execute_model
 execution_pars = {'target': 'color',
@@ -39,7 +36,7 @@ approaches = {'dummy_predictor': {'approach_function': approaches.DummyPredictor
                                                     },
                                   },
               'random_predictor': {'approach_function': approaches.RandomChoicePredictor,
-                                   'approach_pars': {'random_state': random_state,
+                                   'approach_pars': {'random_state': default_pars.random_state,
                                                      },
                                    },
               }

@@ -2,8 +2,10 @@ import itertools
 import numpy as np
 import pandas as pd
 
+from modev import default_pars
 
-def expand_parameter_grid(grid, fixed_pars=None):
+
+def expand_parameter_grid(grid, fixed_pars=default_pars.exploration_pars_fixed_pars):
     pars_names = list(grid)
     pars_lists = []
     if fixed_pars is None:
