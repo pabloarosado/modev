@@ -1,9 +1,9 @@
 import logging
 
-from modev import default
 from modev import execution
 from modev import plotting
 from modev import validation
+from modev.templates import default
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 

@@ -1,8 +1,12 @@
 import numpy as np
 from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 
+from modev import default_pars
 
-def k_folds_split(raw_indexes, n_splits, labels=None, shuffle=True, random_state=1000, return_original_indexes=True):
+
+def k_folds_split(raw_indexes, n_splits, labels=default_pars.validation_pars_labels,
+                  shuffle=default_pars.validation_pars_shuffle, random_state=default_pars.random_state,
+                  return_original_indexes=default_pars.validation_pars_return_original_indexes):
     raw_indexes = np.array(raw_indexes)
     # Split a data set into n parts without overlap, and optionally stratified.
     if labels is None:
@@ -16,8 +20,11 @@ def k_folds_split(raw_indexes, n_splits, labels=None, shuffle=True, random_state
     return parts
 
 
-def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=1, labels=None, shuffle=True, random_state=1000,
-                        train_name='train', test_name='test'):
+def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=default_pars.validation_pars_test_n_sets,
+                        labels=default_pars.validation_pars_labels, shuffle=default_pars.validation_pars_shuffle,
+                        random_state=default_pars.random_state,
+                        train_name=default_pars.validation_pars_train_name,
+                        test_name=default_pars.validation_pars_test_name):
 
     # To begin with, the raw dataset is train, and there is only one test set (named 'test_0'), which is empty.
     indexes = {train_name: np.array(raw_indexes),
@@ -44,8 +51,12 @@ def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=1, labels=None, 
     return indexes
 
 
-def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=4, test_fraction=0.2, test_n_sets=1, labels=None,
-                                    shuffle=True, random_state=1000):
+def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars.validation_pars_playground_n_folds,
+                                    test_fraction=default_pars.validation_pars_test_fraction,
+                                    test_n_sets=default_pars.validation_pars_test_n_sets,
+                                    labels=default_pars.validation_pars_labels,
+                                    shuffle=default_pars.validation_pars_shuffle,
+                                    random_state=default_pars.random_state):
     # Split data set into playground and test set(s).
     indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
                                   labels=labels, shuffle=shuffle, random_state=random_state, train_name='playground',

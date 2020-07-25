@@ -1,9 +1,15 @@
 import plotly
 import plotly.express as px
 
+from modev import default_pars
 
-def metric_vs_folds(results, main_metric, plot_file=None, added_cols_hover=None, title=None, show=True,
-                    fold_col='fold', model_col='id', approach_col='approach', width=950, height=500):
+
+def metric_vs_folds(results, main_metric, plot_file=default_pars.plotting_pars_plot_file,
+                    added_cols_hover=default_pars.plotting_pars_added_cols_hover,
+                    title=default_pars.plotting_pars_title, show=default_pars.plotting_pars_show,
+                    fold_col=default_pars.plotting_pars_fold_col, model_col=default_pars.plotting_pars_model_col,
+                    approach_col=default_pars.plotting_pars_approach_col, width=default_pars.plotting_pars_width,
+                    height=default_pars.plotting_pars_height):
     data_plot = results.copy()
     cols_hover = [model_col, approach_col]
     if added_cols_hover is not None:
