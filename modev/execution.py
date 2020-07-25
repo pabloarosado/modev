@@ -22,18 +22,14 @@ def _get_approaches_functions_from_grid(approaches_grid):
     return approaches_functions
 
 
-def run_experiment(experiment, data, indexes, execution_function):
+def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
+                   evaluation_pars, exploration_function, approaches):
     # Extract all necessary info from experiment.
-    approaches_grid = experiment['approaches']
+    approaches_grid = approaches
     approaches_functions = _get_approaches_functions_from_grid(approaches_grid)
-    evaluation_function = experiment['evaluation_function']
-    evaluation_pars = experiment['evaluation_pars']
     metrics = evaluation_pars['metrics']
-    execution_pars = experiment['execution_pars']
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
-    exploration_function = experiment['exploration_function']
-    validation_pars = experiment['validation_pars']
 
     # Get list of folds to execute.
     if test_mode:
