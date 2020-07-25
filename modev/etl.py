@@ -48,7 +48,7 @@ def load_local_file(data_file, selection=None, sample_nrows=None, random_state=1
     if not os.path.isfile(data_file):
         logging.error("Data file not found: %s", data_file)
     # Get default args for pd.read_csv.
-    usable_kwargs = utils.get_usable_kwargs_for_function(pd.read_csv, kwargs)
+    usable_kwargs = utils.get_usable_args_for_function(pd.read_csv, kwargs)
     logging.info("Loading data from file %s", data_file)
     data = pd.read_csv(data_file, **usable_kwargs)
     if selection is not None:

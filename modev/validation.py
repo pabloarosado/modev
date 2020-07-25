@@ -44,7 +44,7 @@ def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=1, labels=None, 
     return indexes
 
 
-def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds, test_fraction, test_n_sets=1, labels=None,
+def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=4, test_fraction=0.2, test_n_sets=1, labels=None,
                                     shuffle=True, random_state=1000):
     # Split data set into playground and test set(s).
     indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,

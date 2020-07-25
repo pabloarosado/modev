@@ -8,3 +8,4 @@ import modev.plotting
 import modev.selection
 import modev.utils
 import modev.validation
+import modev.templates
