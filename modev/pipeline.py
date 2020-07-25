@@ -13,6 +13,8 @@ def _check_requirements(previous_requirements, error_message):
         logging.error(error_message)
 
 # TODO: Create function to check all required inputs.
+# TODO: Put all default values in a default_pars folder, and make default experiment a template.
+#  Then ensure all default parameters in functions come from default_pars.
 
 
 class Pipeline:

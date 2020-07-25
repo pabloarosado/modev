@@ -26,5 +26,7 @@ setuptools.setup(
         'scikit-learn',
         'tqdm',
     ],
+    include_package_data=True,
+    package_data={'modev': ['data/*.csv']},
     python_requires='>=3.6',
 )

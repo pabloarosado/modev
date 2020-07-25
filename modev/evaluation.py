@@ -1,4 +1,10 @@
-import sklearn.metrics
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+from modev import utils
+
+# List of kwargs accepted by precision and recall functions from sklearn, and accuracy.
+precision_recall_f1_kwargs = ['labels', 'pos_label', 'average', 'sample_weight', 'zero_division']
+accuracy_kwargs = ['normalize', 'sample_weight']
 
 
 def prepare_true_and_pred(raw_true, raw_pred):
@@ -20,7 +26,7 @@ def prepare_true_and_pred(raw_true, raw_pred):
     return raw_true, raw_pred
 
 
-def evaluate_predictions(raw_true, raw_pred, metrics):
+def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
     """Evaluate predictions, given ground truth, using a list of metrics.
 
     Parameters
@@ -39,14 +45,22 @@ def evaluate_predictions(raw_true, raw_pred, metrics):
 
     """
     true, pred = prepare_true_and_pred(raw_true, raw_pred)
+
     results = {}
     for metric in metrics:
         if metric == 'accuracy':
-            results[metric] = sklearn.metrics.accuracy_score(true, pred)
+            usable_kwargs = utils.get_usable_args_for_function(accuracy_score, kwargs, accuracy_kwargs)
+            results[metric] = accuracy_score(true, pred, **usable_kwargs)
         elif metric == 'precision':
-            results[metric] = sklearn.metrics.precision_score(true, pred)
+            # TODO: Allow saving metrics like precision and recall as lists (for different labels).
+            usable_kwargs = utils.get_usable_args_for_function(precision_score, kwargs, precision_recall_f1_kwargs)
+            results[metric] = precision_score(true, pred, **usable_kwargs)
         elif metric == 'recall':
-            results[metric] = sklearn.metrics.recall_score(true, pred)
+            usable_kwargs = utils.get_usable_args_for_function(recall_score, kwargs, precision_recall_f1_kwargs)
+            results[metric] = recall_score(true, pred, **usable_kwargs)
+        elif metric == 'f1':
+            usable_kwargs = utils.get_usable_args_for_function(f1_score, kwargs, precision_recall_f1_kwargs)
+            results[metric] = f1_score(true, pred, **usable_kwargs)
         elif metric.startswith(('precision_at_', 'recall_at', 'threshold_at_')):
             # Get metrics at k or metrics at k percent (either precision, recall, or threshold).
             k = get_k_from_metric_name(metric, len(pred))
