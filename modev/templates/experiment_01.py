@@ -2,18 +2,14 @@
 
 """
 
-experiment = {'validation_pars': {'test_fraction': 0.5,
-                                  'test_n_sets': 6,
-                                  'playground_n_folds': 4,
-                                  'random_state': 42,
-                                  },
-              'execution_pars': {'target': 'color',
-                                 'test_mode': True},
-              'evaluation_pars': {'metrics': ['precision', 'recall', 'f1'],
-                                  'average': 'micro',
-                                  },
-              'exploration_pars': {'do_not_expand': None,
+experiment = {'validation_inputs': {'test_fraction': 0.5,
+                                    'test_n_sets': 6,
+                                    'random_state': 42,
+                                    },
+              'execution_inputs': {'test_mode': True},
+              'evaluation_inputs': {'metrics': ['precision', 'recall', 'f1'],
+                                    'average': 'micro',
+                                    },
+              'selection_inputs': {'main_metric': 'f1',
                                    },
-              'selection_pars': {'main_metric': 'f1',
-                                 },
               }

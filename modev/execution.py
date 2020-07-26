@@ -3,13 +3,17 @@ from tqdm.auto import tqdm
 from modev import default_pars
 
 
-def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.execution_pars_test_mode):
+def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.execution_pars_test_mode,
+                             train_name=default_pars.train_key,
+                             dev_name=default_pars.dev_key,
+                             test_name=default_pars.test_key,
+                             playground_name=default_pars.playground_key):
     if test_mode:
-        train_set = data.loc[indexes['playground']]
-        test_set = data.loc[indexes[f'test_{fold}']]
+        train_set = data.loc[indexes[playground_name]]
+        test_set = data.loc[indexes[f'{test_name}_{fold}']]
     else:
-        train_set = data.loc[indexes[f'train_{fold}']]
-        test_set = data.loc[indexes[f'dev_{fold}']]
+        train_set = data.loc[indexes[f'{train_name}_{fold}']]
+        test_set = data.loc[indexes[f'{dev_name}_{fold}']]
     return train_set, test_set
 
 
@@ -19,17 +23,19 @@ def separate_predictors_and_target(data_set, target_col):
     return data_set_x, data_set_y
 
 
-def _get_approaches_functions_from_grid(approaches_grid):
-    approaches_functions = {app_name: approaches_grid[app_name]['approach_function'] for app_name in approaches_grid}
+def _get_approaches_functions_from_grid(approaches_grid, function_key=default_pars.function_key):
+    approaches_functions = {app_name: approaches_grid[app_name][function_key] for app_name in approaches_grid}
     return approaches_functions
 
 
 def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
-                   evaluation_pars, exploration_function, approaches):
+                   evaluation_pars, exploration_function, approaches_function, approaches_pars,
+                   metrics_key=default_pars.metrics_key,
+                   fold_key=default_pars.fold_key,
+                   pars_key=default_pars.pars_key,
+                   approach_key=default_pars.approach_key):
     # Extract all necessary info from experiment.
-    approaches_grid = approaches
-    approaches_functions = _get_approaches_functions_from_grid(approaches_grid)
-    metrics = evaluation_pars['metrics']
+    metrics = evaluation_pars[metrics_key]
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
 
@@ -40,17 +46,17 @@ def run_experiment(data, indexes, validation_pars, execution_function, execution
         folds = list(range(validation_pars['playground_n_folds']))
 
     # Initialise parameter space explorer.
-    explorer = exploration_function(approaches_grid, folds, metrics)
+    explorer = exploration_function(approaches_pars, folds, metrics)
     pars_folds = explorer.initialise_results()
     n_iterations = explorer.select_executions_left()
 
     for _ in tqdm(range(n_iterations)):
         i, row = explorer.get_next_point()
         # Extract all necessary info from this row.
-        fold = row['fold']
-        approach_name = row['approach']
-        approach_pars = row['pars']
-        approach_function = approaches_functions[approach_name]
+        fold = row[fold_key]
+        approach_name = row[approach_key]
+        approach_pars = row[pars_key]
+        approach_function = approaches_function[approach_name]
 
         # Get train_* and test_* sets.
         train_set, test_set = _get_train_and_test_sets(data, indexes, fold, test_mode)

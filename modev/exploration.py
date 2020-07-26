@@ -24,28 +24,24 @@ def expand_parameter_grid(grid, fixed_pars=default_pars.exploration_pars_fixed_p
     return pars
 
 
-def expand_approaches_grids(approaches):
-    approaches_names = []
-    approaches_functions = []
-    approaches_pars = []
-    for app_name in approaches:
-        app_pars = approaches[app_name]['approach_pars']
-        app_function = approaches[app_name]['approach_function']
-        # app_pars['approach_name'] = app_name
+def _split_approaches_name_and_pars(approaches_pars, fixed_pars_key=default_pars.fixed_pars_key):
+    app_names = []
+    app_pars = []
+    for name in approaches_pars:
+        pars = approaches_pars[name]
         fixed_pars = None
-        if 'fixed_pars' in app_pars:
-            fixed_pars = app_pars['fixed_pars']
-        pars = {par: app_pars[par] for par in app_pars if par != 'fixed_pars'}
+        if fixed_pars_key in pars:
+            fixed_pars = pars[fixed_pars_key]
+        pars = {par: pars[par] for par in pars if par != fixed_pars_key}
         expanded_grid = expand_parameter_grid(pars, fixed_pars=fixed_pars)
-        approaches_pars.extend(expanded_grid)
-        approaches_names.extend([app_name] * len(expanded_grid))
-        approaches_functions.extend([app_function] * len(expanded_grid))
-    return approaches_names, approaches_functions, approaches_pars
+        app_pars.extend(expanded_grid)
+        app_names.extend([name] * len(expanded_grid))
+    return app_names, app_pars
 
 
 class GridSearch:
-    def __init__(self, approaches_grid, folds, metrics):
-        self.approaches_grid = approaches_grid
+    def __init__(self, approaches_pars, folds, metrics):
+        self.approaches_pars = approaches_pars
         self.folds = folds
         self.metrics = metrics
         self.pars_folds = None
@@ -54,7 +50,7 @@ class GridSearch:
 
     def initialise_results(self):
         # TODO: Generalise this to save to/load from file.
-        app_names, app_functions, app_pars = expand_approaches_grids(self.approaches_grid)
+        app_names, app_pars = _split_approaches_name_and_pars(self.approaches_pars)
         app_ids = np.arange(len(app_pars))
         # Repeat each pars combination for each fold.
         pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=['pars'])

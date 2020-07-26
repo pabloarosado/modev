@@ -23,8 +23,8 @@ def k_folds_split(raw_indexes, n_splits, labels=default_pars.validation_pars_lab
 def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=default_pars.validation_pars_test_n_sets,
                         labels=default_pars.validation_pars_labels, shuffle=default_pars.validation_pars_shuffle,
                         random_state=default_pars.random_state,
-                        train_name=default_pars.validation_pars_train_name,
-                        test_name=default_pars.validation_pars_test_name):
+                        train_name=default_pars.train_key,
+                        test_name=default_pars.test_key):
 
     # To begin with, the raw dataset is train, and there is only one test set (named 'test_0'), which is empty.
     indexes = {train_name: np.array(raw_indexes),
@@ -56,30 +56,37 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
                                     test_n_sets=default_pars.validation_pars_test_n_sets,
                                     labels=default_pars.validation_pars_labels,
                                     shuffle=default_pars.validation_pars_shuffle,
-                                    random_state=default_pars.random_state):
+                                    random_state=default_pars.random_state,
+                                    train_name=default_pars.train_key,
+                                    dev_name=default_pars.dev_key,
+                                    playground_name=default_pars.playground_key,
+                                    test_name=default_pars.test_key):
     # Split data set into playground and test set(s).
     indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
-                                  labels=labels, shuffle=shuffle, random_state=random_state, train_name='playground',
-                                  test_name='test')
+                                  labels=labels, shuffle=shuffle, random_state=random_state, train_name=playground_name,
+                                  test_name=test_name)
     # Split playground into k train and k dev sets.
-    playground_split = k_folds_split(indexes['playground'], playground_n_folds, labels=None, shuffle=True,
+    playground_split = k_folds_split(indexes[playground_name], playground_n_folds, labels=None, shuffle=True,
                                      random_state=random_state)
-    indexes.update({f'train_{i}': part[0] for i, part in enumerate(playground_split)})
-    indexes.update({f'dev_{i}': part[1] for i, part in enumerate(playground_split)})
+    indexes.update({f'{train_name}_{i}': part[0] for i, part in enumerate(playground_split)})
+    indexes.update({f'{dev_name}_{i}': part[1] for i, part in enumerate(playground_split)})
     return indexes
 
 
-def validate_indexes(indexes):
+def validate_indexes(indexes, train_name=default_pars.train_key,
+                     dev_name=default_pars.dev_key,
+                     playground_name=default_pars.playground_key,
+                     test_name=default_pars.test_key):
     # For convenience, collect all indexes in lists.
     train_indexes = []
     dev_indexes = []
     test_indexes = []
     for key in indexes:
-        if key.startswith('train_'):
+        if key.startswith(f'{train_name}_'):
             train_indexes.extend(indexes[key])
-        elif key.startswith('dev_'):
+        elif key.startswith(f'{dev_name}_'):
             dev_indexes.extend(indexes[key])
-        elif key.startswith('test_'):
+        elif key.startswith(f'{test_name}_'):
             test_indexes.extend(indexes[key])
 
     # Since there can be repetition among indexes in train sets, take unique.
@@ -89,15 +96,15 @@ def validate_indexes(indexes):
     validations = []
 
     # Playground and train indexes coincide.
-    validations.append(set(indexes['playground']) == set(train_indexes))
+    validations.append(set(indexes[playground_name]) == set(train_indexes))
 
     # Train indexes and test indexes do not overlap.
     validations.append((set(train_indexes) & set(test_indexes)) == set())
 
     # For each of the folds in playground, train and dev do not overlap.
-    folds = [int(key.split('_')[-1]) for key in indexes if key.startswith('dev_')]
+    folds = [int(key.split('_')[-1]) for key in indexes if key.startswith(f'{dev_name}_')]
     for fold in folds:
-        validations.append(((set(indexes[f'train_{fold}']) & set(indexes[f'dev_{fold}'])) == set()))
+        validations.append(((set(indexes[f'{train_name}_{fold}']) & set(indexes[f'{dev_name}_{fold}'])) == set()))
 
     # There is no overlap among dev sets.
     validations.append(len(dev_indexes) == len(np.unique(dev_indexes)))
