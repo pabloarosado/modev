@@ -9,20 +9,6 @@ from modev import default_pars
 from modev import utils
 
 
-def load_experiment_module(experiment_file):
-    if not os.path.isfile(experiment_file):
-        logging.error("Experiment file not found: %s", experiment_file)
-    experiment_module = utils.import_file_as_module(experiment_file, module_name='experiment')
-    return experiment_module
-
-
-def load_experiment(experiment_module):
-    if 'experiment' not in dir(experiment_module):
-        logging.error("Experiment file must contain a dictionary called 'experiment'.")
-    experiment = experiment_module.experiment
-    return experiment
-
-
 def apply_selection_to_data(data, selection):
     sel = eval(selection)
     selected_data = data[sel].copy()
