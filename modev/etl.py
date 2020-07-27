@@ -1,3 +1,6 @@
+"""Functions related to extraction, transformation and loading (ETL).
+
+"""
 import logging
 import os
 import pickle
@@ -34,6 +37,28 @@ def sample_from_big_file(data_file, sample_nrows, random_state=default_pars.rand
 
 def load_local_file(data_file, selection=default_pars.etl_pars_selection,
                     sample_nrows=default_pars.etl_pars_sample_nrows, random_state=default_pars.random_state, **kwargs):
+    """Load local (.csv) file.
+
+    This function uses pandas.read_csv() function and accepts all its arguments. But it also has some added arguments.
+
+    Parameters
+    ----------
+    data_file : str
+        Path to local (.csv) file.
+    selection : str or None
+        Selection to perform on the data. For example, if selection is "(data['height'] > 3) & (data['width'] < 2)",
+        that selection will be evaluated and applied to the data; None to apply no selection.
+    sample_nrows : int or None
+        Number of random rows to sample from the data (without repeating rows); None to load all rows.
+    random_state : int
+        Random state (relevant only when sampling from data, i.e. when 'sample_nrows' is not None).
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Data extracted from 'data_file'.
+
+    """
     if not os.path.isfile(data_file):
         logging.error("Data file not found: %s", data_file)
     # Get default args for pd.read_csv.

@@ -1,3 +1,6 @@
+"""Functions related to the validation process, e.g. k-fold or temporal-fold cross-validation.
+
+"""
 import numpy as np
 from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 
@@ -61,6 +64,46 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
                                     dev_name=default_pars.dev_key,
                                     playground_name=default_pars.playground_key,
                                     test_name=default_pars.test_key):
+    """Generate indexes that split data into a playground (with k folds) and n test sets.
+
+    There is only one playground, which contains train and dev sets, and has no overlap with test sets.
+    Playground is split into k folds, namely k non-overlapping dev sets, and k overlapping train sets.
+    Each of the folds contains all data in the playground (part of it in train, and the rest in dev); hence train and
+    dev sets of the same fold do not overlap.
+
+    Parameters
+    ----------
+    raw_indexes : array_like
+        All indexes of data. This could simply be the output of 'data.index' (assuming data is a pandas dataframe).
+    playground_n_folds : int
+        Number of folds to split playground into (also called 'k'), so that there will be k train sets and k dev sets.
+    test_fraction : float
+        Fraction of data to use for test sets.
+    test_n_sets : int
+        Number of test sets.
+    labels : list or None
+        Labels to stratify data according to their distribution; None to not stratify data.
+    shuffle : bool
+        True to shuffle data before splitting; False to keep them sorted as they are before splitting.
+    random_state : int
+        Random state to use on the splittings.
+    train_name : str
+        Name given to the train set (usually 'train').
+    dev_name : str
+        Name given to the dev set (usually 'dev').
+    playground_name : str
+        Name given to the playground (usually 'playground').
+    test_name : str
+        Name given to the test set (usually 'test').
+
+    Returns
+    -------
+    indexes : dict
+        Indexes to use for validation. It contains one playground (named 'playground') and test sets (named 'test_0',
+        ..., 'test_n'). The indexes of train and dev sets (contained in the playground) are also given (named 'train_0',
+        ..., 'train_k' and 'dev_0', ..., 'dev_k', respectively).
+
+    """
     # Split data set into playground and test set(s).
     indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
                                   labels=labels, shuffle=shuffle, random_state=random_state, train_name=playground_name,

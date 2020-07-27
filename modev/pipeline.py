@@ -1,3 +1,6 @@
+"""Main modev module, that contains Pipeline.
+
+"""
 import logging
 
 from modev import default_pars
@@ -12,8 +15,6 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=lo
 def _check_requirements(previous_requirements, error_message):
     if any([requirement is None for requirement in previous_requirements]):
         logging.error(error_message)
-
-# TODO: Create function to check all required inputs.
 
 
 def _split_function_and_pars(inputs, function_key=default_pars.function_key):
@@ -53,6 +54,68 @@ class Pipeline:
                  exploration_inputs=None,
                  selection_inputs=None,
                  approaches_inputs=None):
+        """Model development pipeline.
+
+        The arguments accepted by Pipeline refer to the usual ingredients in a data science project (data loding,
+        evaluation metrics, model selection method...). For any of those arguments, one can either use a default
+        function or provide a custom function.
+        * To provide a custom function in any of the dictionaries, use the 'function' key. All parameters required by a
+        custom function can be given in the same dictionary.
+        * If 'function' is not specified, a default function (taken from one of modev's modules) is used. Arguments of
+        the function can be given in the same dictionary (and if not given, default values are assumed).
+
+        Parameters
+        ----------
+        load_inputs : dict
+            Inputs related to data loading.
+            See documentation of etl.load_local_file.
+        validation_inputs : dict
+            Inputs related to validation method (e.g. k-fold or temporal-fold cross-validation).
+            See documentation of validation.k_fold_playground_n_tests_split.
+        execution_inputs : dict
+            Inputs related to the execution of approaches (by default, an approach consists of a class with a 'fit' and
+            a 'predict' method).
+            See documentation of execution.execute_model.
+        evaluation_inputs : dict
+            Inputs related to evaluation metrics.
+            See documentation of evaluation.evaluate_predictions.
+        exploration_inputs : dict
+            Inputs related to the method to explore the parameter space (e.g. grid search or random search).
+            See documentation of exploration.GridSearch.
+            Note: In this argument, 'function' is actually a class.
+        selection_inputs : dict
+            Inputs related to the model selection method.
+            See documentation of selection.model_selection.
+        approaches_inputs : list of dicts
+            List of approaches to be used. Each element in the list is a dictionary with at least two keys:
+            * 'approach_name': Name of the approach (str).
+            * 'function': Actual approach (usually, a class with 'fit' and 'predict' methods).
+            * Any other given key will be assumed to be arguments of the approach.
+            See documentation of default approaches (approaches.DummyPredictor and approaches.RandomChoicePredictor).
+
+        Examples
+        --------
+        To initialise pipeline with all default inputs:
+        >>> pipe = Pipeline()
+        To run it:
+        >>> pipe.run()
+        To get the data:
+        >>> pipe.get_data()
+        To get the indexes of train/dev/test sets:
+        >>> pipe.get_indexes()
+        To get the evaluation of each of the executions on each of the folds:
+        >>> pipe.get_results()
+        To plot evaluation results per fold:
+        >>> pipe.plot_results()
+        To get the final ranking of best approaches (after combining results of different folds):
+        >>> pipe.get_selected_models()
+
+        To initialise pipeline with a template experiment (a dictionary with 'load_inputs', 'validation_inputs', etc.):
+        >>> experiment = templates.experiment_01.experiment
+        >>> pipe = Pipeline(**experiment)
+        And to run it follow the previous example.
+
+        """
         # If input is not given, take it from default.
         # If input is given without specifying a function, take all required parameters from default except those
         # explicitly given.

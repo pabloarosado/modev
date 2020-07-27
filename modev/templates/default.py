@@ -1,3 +1,6 @@
+"""Default inputs for modev pipeline.
+
+"""
 from modev import approaches
 from modev import default_pars
 from modev import etl
