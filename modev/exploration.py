@@ -53,10 +53,10 @@ class GridSearch:
         app_names, app_pars = _split_approaches_name_and_pars(self.approaches_pars)
         app_ids = np.arange(len(app_pars))
         # Repeat each pars combination for each fold.
-        pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=['pars'])
-        pars_folds['approach'] = np.repeat(app_names, len(self.folds))
-        pars_folds['id'] = np.repeat(app_ids, len(self.folds))
-        pars_folds['fold'] = np.tile(self.folds, len(app_pars))
+        pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=[default_pars.pars_key])
+        pars_folds[default_pars.approach_key] = np.repeat(app_names, len(self.folds))
+        pars_folds[default_pars.id_key] = np.repeat(app_ids, len(self.folds))
+        pars_folds[default_pars.fold_key] = np.tile(self.folds, len(app_pars))
         # Add a column for each of the evaluation metrics.
         self.pars_folds = pars_folds
         # Add metrics to results dataframe.
