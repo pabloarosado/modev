@@ -30,12 +30,11 @@ def _get_approaches_functions_from_grid(approaches_grid, function_key=default_pa
 
 def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
                    evaluation_pars, exploration_function, approaches_function, approaches_pars,
-                   metrics_key=default_pars.metrics_key,
                    fold_key=default_pars.fold_key,
                    pars_key=default_pars.pars_key,
                    approach_key=default_pars.approach_key):
     # Extract all necessary info from experiment.
-    metrics = evaluation_pars[metrics_key]
+    metrics = evaluation_pars['metrics']
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
 

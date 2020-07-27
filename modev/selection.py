@@ -3,15 +3,16 @@ import numpy as np
 from modev import default_pars
 
 
-def combine_fold_results(results, metrics, aggregation_method=default_pars.selection_pars_aggregation_method):
+def combine_fold_results(results, metrics, aggregation_method=default_pars.selection_pars_aggregation_method,
+                         approach_key=default_pars.approach_key, pars_key=default_pars.pars_key,
+                         id_key=default_pars.id_key):
     # Combine results for all folds using a certain aggregation method (e.g. mean).
     metrics_agg = {col: aggregation_method for col in metrics}
     # For columns that do not need to be combined, simply take first (since they are identical for all folds).
-    # other_columns = [col for col in pipe.results.columns if col not in metrics]
-    other_columns = ['approach', 'pars']
+    other_columns = [approach_key, pars_key]
     other_columns_agg = {col: 'first' for col in other_columns}
     metrics_agg.update(other_columns_agg)
-    combined_results = results.groupby('id').agg(metrics_agg)
+    combined_results = results.groupby(id_key).agg(metrics_agg)
     return combined_results
 
 

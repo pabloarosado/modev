@@ -73,8 +73,8 @@ class Pipeline:
         self.selection_function, self.selection_pars = _split_function_and_pars(selection_inputs)
         self.approaches_function, self.approaches_pars = _split_approaches_function_and_pars(approaches_inputs)
         # Initialise other attributes.
-        self.metrics = self.evaluation_pars[default_pars.metrics_key]
-        self.main_metric = self.selection_pars[default_pars.main_metric_key]
+        self.metrics = self.evaluation_pars['metrics']
+        self.main_metric = self.selection_pars['main_metric']
         self.data = None
         self.indexes = None
         self.results = None
