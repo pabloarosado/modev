@@ -1,3 +1,6 @@
+"""Functions related to evaluation metrics.
+
+"""
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 from modev import default_pars
@@ -37,7 +40,17 @@ def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
     raw_pred : np.array
         Predictions (either booleans, labels, or probabilities, depending on the metric).
     metrics : list
-        Metrics to use for evaluation (e.g. ['precision', 'recall'])
+        Metrics to use for evaluation. Implemented methods include:
+         * 'precision': usual precision in classification problems.
+         * 'recall': usual recall in classification problems.
+         * 'f1': usual f1-score in classification problems.
+         * 'accuracy': usual accuracy in classification problems.
+         * 'precision_at_*': precision at k (e.g. 'precision_at_10') or at k percent (e.g. 'precision_at_5_pct').
+         * 'recall_at_*': recall at k (e.g. 'recall_at_10') or at k percent (e.g. 'recall_at_5_pct').
+         * 'threshold_at_*': threshold at k (e.g. 'threshold_at_10') or at k percent (e.g. 'threshold_at_5_pct').
+        Note: For the time being, all metrics have to return only one number; In the case of a multi-class
+        classification, a micro-average precision is returned.
+        # TODO: Allow saving metrics like precision and recall as lists (for different labels).
 
     Returns
     -------
@@ -53,7 +66,6 @@ def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
             usable_kwargs = utils.get_usable_args_for_function(accuracy_score, kwargs, accuracy_kwargs)
             results[metric] = accuracy_score(true, pred, **usable_kwargs)
         elif metric == 'precision':
-            # TODO: Allow saving metrics like precision and recall as lists (for different labels).
             usable_kwargs = utils.get_usable_args_for_function(precision_score, kwargs, precision_recall_f1_kwargs)
             results[metric] = precision_score(true, pred, **usable_kwargs)
         elif metric == 'recall':

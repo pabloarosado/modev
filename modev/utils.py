@@ -1,3 +1,6 @@
+"""Useful functions that are not specifically designed for modev.
+
+"""
 import importlib
 import logging
 import os

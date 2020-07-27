@@ -1,3 +1,6 @@
+"""Simple approaches to use for testing purposes, or as baselines.
+
+"""
 import numpy as np
 
 from modev import default_pars

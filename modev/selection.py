@@ -1,3 +1,6 @@
+"""Functions related to model selection.
+
+"""
 import numpy as np
 
 from modev import default_pars
@@ -25,7 +28,6 @@ def apply_condition_to_dataframe(df, condition=default_pars.selection_pars_condi
     selection = np.ones(len(df), dtype=bool)
     if condition is not None:
         selection = eval(condition)
-        # TODO: Here ensure the condition is well structured.
     df_selected = df[selection].copy()
     return df_selected
 
@@ -33,6 +35,32 @@ def apply_condition_to_dataframe(df, condition=default_pars.selection_pars_condi
 def model_selection(results, metrics, main_metric, aggregation_method=default_pars.selection_pars_aggregation_method,
                     results_condition=default_pars.selection_pars_results_condition,
                     combined_results_condition=default_pars.selection_pars_combined_results_condition):
+    """Model selection.
+
+    Take the evaluation of approaches on some folds, and select the best model.
+
+    Parameters
+    ----------
+    results : pd.DataFrame
+        Evaluations of the performance of approaches on different data folds.
+    metrics : list
+        Name of columns corresponding to metrics in 'results' dataframe.
+    main_metric : str
+        Name of the main metric (the one that has to be maximized).
+    aggregation_method : str
+        Aggregation method to use to combine evaluations of different folds (e.g. 'mean').
+    results_condition : str
+        Condition to be applied to results dataframe before combining results from different folds.
+    combined_results_condition : str
+        Condition to be applied to results dataframe after combining results from different folds.
+
+    Returns
+    -------
+    combine_results_sorted : pd.DataFrame
+        Ranking of results (sorted in descending value of 'main_metric') of approaches that fulfil the imposed
+        conditions.
+
+    """
     # Apply conditions to results of individual folds.
     results_selected = apply_condition_to_dataframe(results, results_condition)
     # Combine results of different folds.

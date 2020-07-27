@@ -1,3 +1,6 @@
+"""Functions related to plotting.
+
+"""
 import plotly
 import plotly.express as px
 

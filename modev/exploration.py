@@ -1,3 +1,6 @@
+"""Functions related to the exploration of the parameter space.
+
+"""
 import itertools
 import numpy as np
 import pandas as pd
@@ -41,6 +44,20 @@ def _split_approaches_name_and_pars(approaches_pars, fixed_pars_key=default_pars
 
 class GridSearch:
     def __init__(self, approaches_pars, folds, metrics):
+        """Grid search exploration of the parameter space.
+
+        Parameters
+        ----------
+        approaches_pars : dict
+            Dictionaries of approaches. Each key corresponds to one approach name, and the value is a dictionary.
+            This inner dictionary of an individual approach has one key per parameter, and the value is a list of
+            parameter values to explore.
+        folds : list of ints
+            List of folds (e.g. [0, 1, 2, 3]).
+        metrics : list
+            List of metrics.
+
+        """
         self.approaches_pars = approaches_pars
         self.folds = folds
         self.metrics = metrics

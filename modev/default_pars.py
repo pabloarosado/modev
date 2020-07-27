@@ -1,3 +1,6 @@
+"""Default values for modev parameters.
+
+"""
 import pkg_resources
 
 approach_key = 'approach'

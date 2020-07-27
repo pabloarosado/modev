@@ -1,3 +1,6 @@
+"""Functions related to the execution of the pipeline.
+
+"""
 from tqdm.auto import tqdm
 
 from modev import default_pars
@@ -75,6 +78,33 @@ def run_experiment(data, indexes, validation_pars, execution_function, execution
 
 
 def execute_model(approach_function, approach_pars, train_x, train_y, test_x, **kwargs):
+    """Execution method (including training and prediction) for an approach.
+
+    This function takes an approach 'approach_function' with parameters 'approach_pars', a train set (with predictors
+    'train_x' and targets 'train_y') and the predictors of a test set 'test_x', and returns the predicted targets of the
+    test set.
+    Note: Here, 'test' refers to either a dev or a test set indistinctly.
+
+    Parameters
+    ----------
+    approach_function : class
+        Approach that contains a 'fit' method (to fit approach on train set) and a 'predict' method (to predict on the
+        test set).
+    approach_pars : dict
+        Parameters for the approach.
+    train_x : array_like
+        Predictors for the train set.
+    train_y : array_like
+        Target values for the train set.
+    test_x : array_like
+        Predictors for the test set (or dev set).
+
+    Returns
+    -------
+    predictions: array_like
+        Predictions for the test set (or dev set).
+
+    """
     model = approach_function(**approach_pars)
     model.fit(train_x, train_y)
     predictions = model.predict(test_x)

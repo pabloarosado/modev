@@ -1,4 +1,4 @@
-"""Some variations with respect to default experiment.
+"""Template experiment which contains some variations with respect to the default inputs.
 
 """
 
