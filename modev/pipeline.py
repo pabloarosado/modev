@@ -9,7 +9,7 @@ from modev import plotting
 from modev import validation
 from modev.templates import default
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.WARNING)
 
 
 def _check_requirements(previous_requirements, error_message):
@@ -56,7 +56,7 @@ class Pipeline:
                  approaches_inputs=None):
         """Model development pipeline.
 
-        The arguments accepted by Pipeline refer to the usual ingredients in a data science project (data loding,
+        The arguments accepted by Pipeline refer to the usual ingredients in a data science project (data loading,
         evaluation metrics, model selection method...). For any of those arguments, one can either use a default
         function or provide a custom function.
         * To provide a custom function in any of the dictionaries, use the 'function' key. All parameters required by a
