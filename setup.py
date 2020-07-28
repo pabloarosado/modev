@@ -9,7 +9,7 @@ setuptools.setup(
     author="Pablo Rosado",
     author_email="pabloarosado@gmail.com",
     description="Model Development for Data Science Projects.",
-    keywords="data science model development",
+    keywords=["modev", "Data Science", "Machine Learning", "Modeling"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pabloarosado/modev",
@@ -18,6 +18,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering",
     ],
     install_requires=[
         'numpy',
