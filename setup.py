@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="modev-pablorosado",
+    name="modev",
     version="0.0.1",
     author="Pablo Rosado",
     author_email="pabloarosado@gmail.com",
