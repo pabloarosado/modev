@@ -43,7 +43,7 @@ def _split_approaches_name_and_pars(approaches_pars, fixed_pars_key=default_pars
 
 
 class GridSearch:
-    def __init__(self, approaches_pars, folds, metrics):
+    def __init__(self, approaches_pars, folds):
         """Grid search exploration of the parameter space.
 
         Parameters
@@ -54,13 +54,10 @@ class GridSearch:
             parameter values to explore.
         folds : list of ints
             List of folds (e.g. [0, 1, 2, 3]).
-        metrics : list
-            List of metrics.
 
         """
         self.approaches_pars = approaches_pars
         self.folds = folds
-        self.metrics = metrics
         self.pars_folds = None
         self.selection_to_execute = None
         self.next_point_generator = None
@@ -76,9 +73,6 @@ class GridSearch:
         pars_folds[default_pars.fold_key] = np.tile(self.folds, len(app_pars))
         # Add a column for each of the evaluation metrics.
         self.pars_folds = pars_folds
-        # Add metrics to results dataframe.
-        for metric in self.metrics:
-            pars_folds[metric] = np.nan
         return self.pars_folds
 
     def select_executions_left(self):

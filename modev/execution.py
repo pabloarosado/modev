@@ -1,6 +1,7 @@
 """Functions related to the execution of the pipeline.
 
 """
+import numpy as np
 from tqdm.auto import tqdm
 
 from modev import default_pars
@@ -31,13 +32,19 @@ def _get_approaches_functions_from_grid(approaches_grid, function_key=default_pa
     return approaches_functions
 
 
+def _add_metrics_to_pars_folds(i, pars_folds, results):
+    for metric in results:
+        if metric not in pars_folds.columns:
+            pars_folds[metric] = np.nan
+        pars_folds.loc[i, metric] = results[metric]
+
+
 def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
                    evaluation_pars, exploration_function, approaches_function, approaches_pars,
                    fold_key=default_pars.fold_key,
                    pars_key=default_pars.pars_key,
                    approach_key=default_pars.approach_key):
     # Extract all necessary info from experiment.
-    metrics = evaluation_pars['metrics']
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
 
@@ -48,7 +55,7 @@ def run_experiment(data, indexes, validation_pars, execution_function, execution
         folds = list(range(validation_pars['playground_n_folds']))
 
     # Initialise parameter space explorer.
-    explorer = exploration_function(approaches_pars, folds, metrics)
+    explorer = exploration_function(approaches_pars, folds)
     pars_folds = explorer.initialise_results()
     n_iterations = explorer.select_executions_left()
 
@@ -71,9 +78,8 @@ def run_experiment(data, indexes, validation_pars, execution_function, execution
         # Evaluate predictions.
         results = evaluation_function(list(test_y), list(predictions), **evaluation_pars)
 
-        # Write results for these parameters and fold.
-        for metric in results:
-            pars_folds.loc[i, metric] = results[metric]
+        # Ensure metrics columns exist in pars_folds and write results for these parameters and fold.
+        _add_metrics_to_pars_folds(i, pars_folds, results)
     return pars_folds
 
 

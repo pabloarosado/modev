@@ -50,7 +50,6 @@ def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
          * 'threshold_at_*': threshold at k (e.g. 'threshold_at_10') or at k percent (e.g. 'threshold_at_5_pct').
         Note: For the time being, all metrics have to return only one number; In the case of a multi-class
         classification, a micro-average precision is returned.
-        # TODO: Allow saving metrics like precision and recall as lists (for different labels).
 
     Returns
     -------
@@ -80,6 +79,11 @@ def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
             type_of_metric = metric.split('_at_')[0]
             # Extract only the type of metric at k needed.
             results[metric] = metrics_at_k(true, pred, k)[type_of_metric]
+    # TODO: Allow saving metrics like precision and recall as lists (for different labels). Maybe the easiest is to
+    #  create metrics *_per_label, that repeat that metric for each of the labels. But for that ensure that 'metrics'
+    #  doesn't need to be redefined in pipeline.
+
+    # TODO: Allow saving file with individual predictions in test examples.
     return results
 
 
