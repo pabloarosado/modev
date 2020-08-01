@@ -165,7 +165,7 @@ class Pipeline:
     def get_results(self, reload=False):
         _check_requirements([self.data, self.indexes], self.requirements_error_message)
         if self.results is None or reload:
-            self.results = execution.run_experiment(self.data, self.indexes, self.validation_pars,
+            self.results = execution.run_experiment(self.data, self.indexes,
                                                     self.execution_function, self.execution_pars,
                                                     self.evaluation_function, self.evaluation_pars,
                                                     self.exploration_function, self.approaches_function,

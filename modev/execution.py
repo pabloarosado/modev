@@ -39,20 +39,27 @@ def _add_metrics_to_pars_folds(i, pars_folds, results):
         pars_folds.loc[i, metric] = results[metric]
 
 
-def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
-                   evaluation_pars, exploration_function, approaches_function, approaches_pars,
+def _get_list_of_sets_from_indexes(indexes, set_name):
+    list_of_sets = [int(part.split('_')[-1]) for part in indexes if part.startswith(set_name)]
+    return list_of_sets
+
+
+def run_experiment(data, indexes, execution_function, execution_pars, evaluation_function, evaluation_pars,
+                   exploration_function, approaches_function, approaches_pars,
                    fold_key=default_pars.fold_key,
                    pars_key=default_pars.pars_key,
-                   approach_key=default_pars.approach_key):
+                   approach_key=default_pars.approach_key,
+                   dev_key=default_pars.dev_key,
+                   test_key=default_pars.test_key):
     # Extract all necessary info from experiment.
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
 
     # Get list of folds to execute.
     if test_mode:
-        folds = list(range(validation_pars['test_n_sets']))
+        folds = _get_list_of_sets_from_indexes(indexes, test_key)
     else:
-        folds = list(range(validation_pars['playground_n_folds']))
+        folds = _get_list_of_sets_from_indexes(indexes, dev_key)
 
     # Initialise parameter space explorer.
     explorer = exploration_function(approaches_pars, folds)
