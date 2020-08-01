@@ -39,9 +39,13 @@ selection_pars_condition = None
 selection_pars_combined_results_condition = None
 selection_pars_results_condition = None
 
+validation_pars_test_fraction = 0.5
+validation_pars_test_n_sets = 6
+# Default validation pars for k-fold cross-validation:
 validation_pars_labels = None
 validation_pars_playground_n_folds = 4
 validation_pars_return_original_indexes = True
 validation_pars_shuffle = True
-validation_pars_test_fraction = 0.5
-validation_pars_test_n_sets = 6
+# Default validation pars for temporal-fold cross-validation:
+validation_min_n_train_examples = 10
+validation_dev_n_sets = 4
