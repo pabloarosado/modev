@@ -3,6 +3,7 @@
 """
 import logging
 
+from modev import common
 from modev import default_pars
 from modev import execution
 from modev import plotting
@@ -136,8 +137,6 @@ class Pipeline:
         self.selection_function, self.selection_pars = _split_function_and_pars(selection_inputs)
         self.approaches_function, self.approaches_pars = _split_approaches_function_and_pars(approaches_inputs)
         # Initialise other attributes.
-        self.metrics = self.evaluation_pars['metrics']
-        self.main_metric = self.selection_pars['main_metric']
         self.data = None
         self.indexes = None
         self.results = None
@@ -174,9 +173,9 @@ class Pipeline:
         return self.results
 
     def get_selected_models(self, reload=False):
-        _check_requirements([self.data, self.results], self.requirements_error_message)
+        _check_requirements([self.results], self.requirements_error_message)
         if self.ranking is None or reload:
-            self.ranking = self.selection_function(self.results, self.metrics, **self.selection_pars)
+            self.ranking = self.selection_function(self.results, **self.selection_pars)
         return self.ranking
 
     def run(self, reload=False):
@@ -192,5 +191,9 @@ class Pipeline:
 
         return self.ranking
 
-    def plot_results(self):
-        plotting.metric_vs_folds(self.results, self.main_metric)
+    def plot_results(self, metrics=None):
+        _check_requirements([self.results], self.requirements_error_message)
+        if metrics is None:
+            metrics = common.get_metrics_from_results(self.results)
+        for metric in metrics:
+            plotting.metric_vs_folds(self.results, metric)
