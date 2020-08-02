@@ -6,11 +6,48 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 
 from modev import default_pars
 
+dev_key = default_pars.dev_key
+playground_key = default_pars.playground_key
+test_key = default_pars.test_key
+train_key = default_pars.train_key
+
 
 def k_folds_split(raw_indexes, n_splits, labels=default_pars.validation_pars_labels,
                   shuffle=default_pars.validation_pars_shuffle, random_state=default_pars.random_state,
                   return_original_indexes=default_pars.validation_pars_return_original_indexes):
+    """Splits a raw set of indexes into k train and k dev subsets using k-folding.
+
+    There are k (given by 'n_splits') folds. Each of the folds uses the entire raw set of indexes (either for train or
+    for dev). The k dev sets do not overlap, and together they cover the entire raw set. For each fold, the train set is
+    made by all examples that are not in the dev set. Hence all train sets of different folds do overlap.
+
+    Parameters
+    ----------
+    raw_indexes : array_like
+        Indexes of data (e.g. data.index, assuming data is a pandas dataframe).
+    n_splits : int
+        Number of folds.
+    labels : list or None
+        If not None, the k-folding is stratified; if None, labels are ignored.
+    shuffle : bool
+        True to shuffle indexes before splitting; False to keep original order.
+    random_state : int or None
+        Random state for shuffling; Ignored if 'shuffle' is False (in which case, 'random_state' can be set to None).
+    return_original_indexes : bool
+        True to return original indexes (as given by 'raw_indexes'); False to return new integer indexes (that go from 0
+        to the number of elements in raw_indexes).
+
+    Returns
+    -------
+    parts : list
+        K different parts (folds). Each part contains a tuple with:
+        (array of indexes in train set for this part, array of indexes in dev set for this part)
+
+    """
     raw_indexes_array = np.array(raw_indexes)
+    # To avoid warnings, impose random_state None if there is no shuffling.
+    if not shuffle:
+        random_state = None
     # Split a data set into n parts without overlap, and optionally stratified.
     if labels is None:
         split_method = KFold
@@ -24,9 +61,30 @@ def k_folds_split(raw_indexes, n_splits, labels=default_pars.validation_pars_lab
 
 
 def temporal_folds_split(raw_indexes, min_n_train_examples, dev_n_sets):
-    # Simplest temporal validation: separate the first 'min_n_train_examples' examples for the first train set.
-    # Then split the remaining example homogeneously in 'dev_n_sets' sets; they will be the dev sets.
-    # The corresponding train set of each of these sets will be made of all previous examples.
+    """Splits a raw set of indexes into k train and k dev subsets using temporal-folding.
+
+    We assume a simplistic temporal validation: separate the first 'min_n_train_examples' examples for the first train
+    set. Then split the remaining examples homogeneously in 'dev_n_sets' sets; they will be the dev sets. The
+    corresponding train set of each of these sets will be made of all previous examples.
+    Therefore, dev sets do not overlap. But each of the train sets fully contains the previous train set.
+
+    Parameters
+    ----------
+    raw_indexes : array_like
+        Indexes of data (e.g. data.index, assuming data is a pandas dataframe).
+    min_n_train_examples : int
+        Minimum number of examples in any train set; This will be the number of examples in the first train set. All
+        subsequent train sets will be larger than this.
+    dev_n_sets : int
+        Number of parts (folds).
+
+    Returns
+    -------
+    parts : list
+        K different parts (folds). Each part contains a tuple with:
+        (array of indexes in train set for this part, array of indexes in dev set for this part)
+
+    """
     raw_indexes_array = np.array(raw_indexes)
     first_train = raw_indexes_array[0: min_n_train_examples]
 
@@ -40,34 +98,67 @@ def temporal_folds_split(raw_indexes, min_n_train_examples, dev_n_sets):
     return parts
 
 
-def train_n_tests_split(raw_indexes, test_fraction, test_n_sets=default_pars.validation_pars_test_n_sets,
-                        labels=default_pars.validation_pars_labels, shuffle=default_pars.validation_pars_shuffle,
-                        random_state=default_pars.random_state,
-                        train_name=default_pars.train_key,
-                        test_name=default_pars.test_key):
+def one_set_n_sets_split(raw_indexes, test_fraction, test_n_sets, first_set_name, second_set_name,
+                         labels=default_pars.validation_pars_labels, shuffle=default_pars.validation_pars_shuffle,
+                         random_state=default_pars.random_state):
+    """Splits a raw set of indexes into one set (e.g. a playground) and n sets (e.g. test sets).
 
+    The raw indexes are split so that a 'test_fraction' is for test sets (as many as 'test_n_sets'). The rest of the raw
+    indexes will be for the first set (e.g. the playground).
+    Therefore, there is no overlap between the first part (playground) and the second part (test sets), and there is no
+    overlap between the different test sets.
+
+    Parameters
+    ----------
+    raw_indexes : array_like
+        Indexes of data (e.g. data.index, assuming data is a pandas dataframe).
+    test_fraction : float
+        Fraction of data to use for test sets.
+    test_n_sets : int
+        Number of test sets.
+    first_set_name : str
+        Name to assign to first part (the one that is not a test set), e.g. 'playground'.
+    second_set_name : str
+        Name to assign to second part (the test sets), e.g. 'test'.
+    labels : list or None
+        If not None, splits are stratified; if None, labels are ignored.
+    shuffle : bool
+        True to shuffle original indexes; False to keep order of raw indexes.
+    random_state : int or None
+        Random state for shuffling; Ignored if 'shuffle' is False (in which case, 'random_state' can be set to None).
+
+    Returns
+    -------
+    indexes : dict
+        Indexes. It contains the first part (e.g. the 'playground') and some test sets (e.g. named 'test_0', ...,
+        'test_n').
+
+    """
     # To begin with, the raw dataset is train, and there is only one test set (named 'test_0'), which is empty.
-    indexes = {train_name: np.array(raw_indexes),
-               f'{test_name}_0': np.array([], dtype=int)}
+    indexes = {first_set_name: np.array(raw_indexes),
+               f'{second_set_name}_0': np.array([], dtype=int)}
 
+    # To avoid warnings, impose random_state None if there is no shuffling.
+    if not shuffle:
+        random_state = None
     # If 'test_fraction' is not zero, take that fraction from train.
     # The new train will be a fraction 1 - 'test_fraction' of the raw dataset.
     # If labels are given, the splitting will be stratified (otherwise random).
     if test_fraction > 0:
-        primary_split = train_test_split(indexes[train_name], test_size=test_fraction, stratify=labels,
+        primary_split = train_test_split(indexes[first_set_name], test_size=test_fraction, stratify=labels,
                                          random_state=random_state, shuffle=shuffle)
-        indexes[train_name] = primary_split[0]
-        indexes[f'{test_name}_0'] = primary_split[1]
+        indexes[first_set_name] = primary_split[0]
+        indexes[f'{second_set_name}_0'] = primary_split[1]
 
         # If 'test_n_sets' > 1, we split the test set into 'test_n_sets' sets (named 'test_0', 'test_1', etc.) of
         # approximately equal size.
         # Again, if labels are given, the splitting will be stratified (otherwise random).
         # For convenience, use 'k_folds_split' for this task (and then ignore train parts).
         if test_n_sets > 1:
-            test_split = k_folds_split(indexes[f'{test_name}_0'], test_n_sets, labels=labels, shuffle=shuffle,
+            test_split = k_folds_split(indexes[f'{second_set_name}_0'], test_n_sets, labels=labels, shuffle=shuffle,
                                        random_state=random_state)
             # Disregard the zeroth part (which is meant for training), and keep the non-overlapping part.
-            indexes.update({f'{test_name}_{i}': fold[1] for i, fold in enumerate(test_split)})
+            indexes.update({f'{second_set_name}_{i}': fold[1] for i, fold in enumerate(test_split)})
     return indexes
 
 
@@ -76,11 +167,7 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
                                     test_n_sets=default_pars.validation_pars_test_n_sets,
                                     labels=default_pars.validation_pars_labels,
                                     shuffle=default_pars.validation_pars_shuffle,
-                                    random_state=default_pars.random_state,
-                                    train_name=default_pars.train_key,
-                                    dev_name=default_pars.dev_key,
-                                    playground_name=default_pars.playground_key,
-                                    test_name=default_pars.test_key):
+                                    random_state=default_pars.random_state):
     """Generate indexes that split data into a playground (with k folds) and n test sets.
 
     There is only one playground, which contains train and dev sets, and has no overlap with test sets.
@@ -102,16 +189,8 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
         Labels to stratify data according to their distribution; None to not stratify data.
     shuffle : bool
         True to shuffle data before splitting; False to keep them sorted as they are before splitting.
-    random_state : int
-        Random state to use on the splittings.
-    train_name : str
-        Name given to the train set (usually 'train').
-    dev_name : str
-        Name given to the dev set (usually 'dev').
-    playground_name : str
-        Name given to the playground (usually 'playground').
-    test_name : str
-        Name given to the test set (usually 'test').
+    random_state : int or None
+        Random state for shuffling; Ignored if 'shuffle' is False (in which case, 'random_state' can be set to None).
 
     Returns
     -------
@@ -121,15 +200,18 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
         ..., 'train_k' and 'dev_0', ..., 'dev_k', respectively).
 
     """
+    # To avoid warnings, impose random_state None if there is no shuffling.
+    if not shuffle:
+        random_state = None
     # Split data set into playground and test set(s).
-    indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
-                                  labels=labels, shuffle=shuffle, random_state=random_state, train_name=playground_name,
-                                  test_name=test_name)
+    indexes = one_set_n_sets_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
+                                   first_set_name=playground_key, second_set_name=test_key,
+                                   labels=labels, shuffle=shuffle, random_state=random_state)
     # Split playground into k train and k dev sets.
-    playground_split = k_folds_split(indexes[playground_name], playground_n_folds, labels=None, shuffle=True,
+    playground_split = k_folds_split(indexes[playground_key], playground_n_folds, labels=None, shuffle=True,
                                      random_state=random_state)
-    indexes.update({f'{train_name}_{i}': part[0] for i, part in enumerate(playground_split)})
-    indexes.update({f'{dev_name}_{i}': part[1] for i, part in enumerate(playground_split)})
+    indexes.update({f'{train_key}_{i}': part[0] for i, part in enumerate(playground_split)})
+    indexes.update({f'{dev_key}_{i}': part[1] for i, part in enumerate(playground_split)})
     return indexes
 
 
@@ -137,11 +219,7 @@ def temporal_fold_playground_n_tests_split(raw_indexes,
                                            min_n_train_examples=default_pars.validation_min_n_train_examples,
                                            dev_n_sets=default_pars.validation_dev_n_sets,
                                            test_fraction=default_pars.validation_pars_test_fraction,
-                                           test_n_sets=default_pars.validation_pars_test_n_sets,
-                                           train_name=default_pars.train_key,
-                                           dev_name=default_pars.dev_key,
-                                           playground_name=default_pars.playground_key,
-                                           test_name=default_pars.test_key):
+                                           test_n_sets=default_pars.validation_pars_test_n_sets):
     """Generate indexes that split data into a playground (with temporal folds) and n test sets.
 
     There is only one playground, which contains train and dev sets, and has no overlap with test sets.
@@ -166,14 +244,6 @@ def temporal_fold_playground_n_tests_split(raw_indexes,
         Fraction of data to use for test sets.
     test_n_sets : int
         Number of test sets.
-    train_name : str
-        Name given to the train set (usually 'train').
-    dev_name : str
-        Name given to the dev set (usually 'dev').
-    playground_name : str
-        Name given to the playground (usually 'playground').
-    test_name : str
-        Name given to the test set (usually 'test').
 
     Returns
     -------
@@ -184,55 +254,64 @@ def temporal_fold_playground_n_tests_split(raw_indexes,
 
     """
     # Split data set into playground and test set(s) without shuffling or stratifying (so they keep their order).
-    indexes = train_n_tests_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
-                                  labels=None, shuffle=False, random_state=None, train_name=playground_name,
-                                  test_name=test_name)
+    indexes = one_set_n_sets_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
+                                   first_set_name=playground_key, second_set_name=test_key,
+                                   labels=None, shuffle=False, random_state=None)
     # Split playground into k train and k dev temporal folds.
-    playground_split = temporal_folds_split(indexes[playground_name], min_n_train_examples=min_n_train_examples,
+    playground_split = temporal_folds_split(indexes[playground_key], min_n_train_examples=min_n_train_examples,
                                             dev_n_sets=dev_n_sets)
-    indexes.update({f'{train_name}_{i}': part[0] for i, part in enumerate(playground_split)})
-    indexes.update({f'{dev_name}_{i}': part[1] for i, part in enumerate(playground_split)})
+    indexes.update({f'{train_key}_{i}': part[0] for i, part in enumerate(playground_split)})
+    indexes.update({f'{dev_key}_{i}': part[1] for i, part in enumerate(playground_split)})
     return indexes
 
 
-def validate_indexes(indexes, train_name=default_pars.train_key,
-                     dev_name=default_pars.dev_key,
-                     playground_name=default_pars.playground_key,
-                     test_name=default_pars.test_key):
+def validate_indexes(indexes):
+    """Check that indexes fulfil some criteria (e.g. that playground and test set do not overlap).
+
+    Parameters
+    ----------
+    indexes : dict
+        Indexes.
+
+    Returns
+    -------
+    checks : bool
+        True if all checks are fulfilled; False otherwise.
+
+    """
     # For convenience, collect all indexes in lists.
     train_indexes = []
     dev_indexes = []
     test_indexes = []
     for key in indexes:
-        if key.startswith(f'{train_name}_'):
+        if key.startswith(f'{train_key}_'):
             train_indexes.extend(indexes[key])
-        elif key.startswith(f'{dev_name}_'):
+        elif key.startswith(f'{dev_key}_'):
             dev_indexes.extend(indexes[key])
-        elif key.startswith(f'{test_name}_'):
+        elif key.startswith(f'{test_key}_'):
             test_indexes.extend(indexes[key])
 
     # Since there can be repetition among indexes in train sets, take unique.
     train_indexes = np.unique(train_indexes)
 
     # Validations that need to be passed:
-    validations = []
+    checks = True
 
     # The set of playground examples coincides with the union of all train and dev sets.
-    validations.append(set(indexes[playground_name]) == (set(train_indexes) | set(dev_indexes)))
+    checks &= set(indexes[playground_key]) == (set(train_indexes) | set(dev_indexes))
 
     # Train indexes and test indexes do not overlap.
-    validations.append((set(train_indexes) & set(test_indexes)) == set())
+    checks &= (set(train_indexes) & set(test_indexes)) == set()
 
     # For each of the folds in playground, train and dev do not overlap.
-    folds = [int(key.split('_')[-1]) for key in indexes if key.startswith(f'{dev_name}_')]
+    folds = [int(key.split('_')[-1]) for key in indexes if key.startswith(f'{dev_key}_')]
     for fold in folds:
-        validations.append(((set(indexes[f'{train_name}_{fold}']) & set(indexes[f'{dev_name}_{fold}'])) == set()))
+        checks &= ((set(indexes[f'{train_key}_{fold}']) & set(indexes[f'{dev_key}_{fold}'])) == set())
 
     # There is no overlap among dev sets.
-    validations.append(len(dev_indexes) == len(np.unique(dev_indexes)))
+    checks &= len(dev_indexes) == len(np.unique(dev_indexes))
 
     # There is no overlap among test sets.
-    validations.append(len(test_indexes) == len(np.unique(test_indexes)))
+    checks &= len(test_indexes) == len(np.unique(test_indexes))
 
-    check_validations = np.sum(validations) == len(validations)
-    return check_validations
+    return checks

@@ -6,10 +6,12 @@ import numpy as np
 from modev import common
 from modev import default_pars
 
+approach_key = default_pars.approach_key
+id_key = default_pars.id_key
+pars_key = default_pars.pars_key
 
-def combine_fold_results(results, aggregation_method=default_pars.selection_pars_aggregation_method,
-                         approach_key=default_pars.approach_key, pars_key=default_pars.pars_key,
-                         id_key=default_pars.id_key):
+
+def combine_fold_results(results, aggregation_method=default_pars.selection_pars_aggregation_method):
     # Get metric names from results' columns.
     metrics = common.get_metrics_from_results(results)
 
