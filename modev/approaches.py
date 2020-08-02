@@ -69,11 +69,6 @@ class RandomChoicePredictor:
         random_state : int
             Random state to use when picking elements from the train set.
 
-        Attributes
-        ----------
-        possible_choices
-            Possible values (taken from target column in the train set) to choose values from, when making predictions.
-
         Methods
         -------
         fit
@@ -100,6 +95,7 @@ class RandomChoicePredictor:
         None
 
         """
+        _ = train_x
         self.possible_choices = train_y
 
     def predict(self, test_x):

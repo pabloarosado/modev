@@ -7,10 +7,14 @@ from modev import common
 from modev import default_pars
 from modev import execution
 from modev import plotting
+from modev import templates
 from modev import validation
 from modev.templates import default
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.WARNING)
+app_name_key = default_pars.approach_name_key
+function_key = default_pars.function_key
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.WARNING)
 
 
 def _check_requirements(previous_requirements, error_message):
@@ -18,21 +22,20 @@ def _check_requirements(previous_requirements, error_message):
         logging.error(error_message)
 
 
-def _split_function_and_pars(inputs, function_key=default_pars.function_key):
+def _split_function_and_pars(inputs):
     function = inputs[function_key]
     pars = {par: inputs[par] for par in inputs if par != function_key}
     return function, pars
 
 
-def _split_approaches_function_and_pars(approaches, function_key=default_pars.function_key,
-                                        app_name_key=default_pars.approach_name_key):
+def _split_approaches_function_and_pars(approaches):
     function = {app[app_name_key]: app[function_key] for app in approaches}
     pars = {app[app_name_key]: {par: app[par] for par in app if par not in [function_key, app_name_key]}
             for app in approaches}
     return function, pars
 
 
-def _override_default_inputs(given_inputs, default_inputs, function_key=default_pars.function_key):
+def _override_default_inputs(given_inputs, default_inputs):
     # If function_key is not given in pars, default function will be used.
     # Therefore, ensure all required parameters are taken from default, except the ones explicitly given in pars.
     if given_inputs is None:

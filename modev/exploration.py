@@ -7,6 +7,8 @@ import pandas as pd
 
 from modev import default_pars
 
+fixed_pars_key = default_pars.fixed_pars_key
+
 
 def expand_parameter_grid(grid, fixed_pars=default_pars.exploration_pars_fixed_pars):
     pars_names = list(grid)
@@ -27,7 +29,7 @@ def expand_parameter_grid(grid, fixed_pars=default_pars.exploration_pars_fixed_p
     return pars
 
 
-def _split_approaches_name_and_pars(approaches_pars, fixed_pars_key=default_pars.fixed_pars_key):
+def _split_approaches_name_and_pars(approaches_pars):
     app_names = []
     app_pars = []
     for name in approaches_pars:
@@ -43,7 +45,7 @@ def _split_approaches_name_and_pars(approaches_pars, fixed_pars_key=default_pars
 
 
 class GridSearch:
-    def __init__(self, approaches_pars, folds):
+    def __init__(self, approaches_pars: dict, folds: list):
         """Grid search exploration of the parameter space.
 
         Parameters
@@ -52,7 +54,7 @@ class GridSearch:
             Dictionaries of approaches. Each key corresponds to one approach name, and the value is a dictionary.
             This inner dictionary of an individual approach has one key per parameter, and the value is a list of
             parameter values to explore.
-        folds : list of ints
+        folds : list
             List of folds (e.g. [0, 1, 2, 3]).
 
         """
