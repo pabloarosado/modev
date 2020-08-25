@@ -29,7 +29,7 @@ def expand_parameter_grid(grid, fixed_pars=default_pars.exploration_pars_fixed_p
     return pars
 
 
-def _split_approaches_name_and_pars(approaches_pars):
+def expand_name_and_parameter_grids(approaches_pars):
     app_names = []
     app_pars = []
     for name in approaches_pars:
@@ -66,7 +66,7 @@ class GridSearch:
 
     def initialise_results(self):
         # TODO: Generalise this to save to/load from file.
-        app_names, app_pars = _split_approaches_name_and_pars(self.approaches_pars)
+        app_names, app_pars = expand_name_and_parameter_grids(self.approaches_pars)
         app_ids = np.arange(len(app_pars))
         # Repeat each pars combination for each fold.
         pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=[default_pars.pars_key])
@@ -95,3 +95,7 @@ class GridSearch:
 # TODO: Create RandomSearch with similar structure.
 # TODO: Create AutoSearch with similar structure.
 #  In this case, _next_point_finder can use self.pars_folds at any time to see explored points and decide next.
+#  The structure of approaches_inputs is the same for grid, random and auto searches.
+#  In the cases of random and auto, only first and last element will be taken, and the rest ignored.
+#  In these cases, the type of the first element will determine whether it is int or float.
+#  If more than one approach are given, split the iterations among them.
