@@ -3,14 +3,21 @@
 """
 import numpy as np
 
+from modev import common
 from modev import default_pars
 
+approach_key = default_pars.approach_key
+id_key = default_pars.id_key
+pars_key = default_pars.pars_key
 
-def combine_fold_results(results, metrics, aggregation_method=default_pars.selection_pars_aggregation_method,
-                         approach_key=default_pars.approach_key, pars_key=default_pars.pars_key,
-                         id_key=default_pars.id_key):
+
+def combine_fold_results(results, aggregation_method=default_pars.selection_pars_aggregation_method):
+    # Get metric names from results' columns.
+    metrics = common.get_metrics_from_results(results)
+
     # Combine results for all folds using a certain aggregation method (e.g. mean).
     metrics_agg = {col: aggregation_method for col in metrics}
+
     # For columns that do not need to be combined, simply take first (since they are identical for all folds).
     other_columns = [approach_key, pars_key]
     other_columns_agg = {col: 'first' for col in other_columns}
@@ -32,7 +39,7 @@ def apply_condition_to_dataframe(df, condition=default_pars.selection_pars_condi
     return df_selected
 
 
-def model_selection(results, metrics, main_metric, aggregation_method=default_pars.selection_pars_aggregation_method,
+def model_selection(results, main_metric, aggregation_method=default_pars.selection_pars_aggregation_method,
                     results_condition=default_pars.selection_pars_results_condition,
                     combined_results_condition=default_pars.selection_pars_combined_results_condition):
     """Model selection.
@@ -43,8 +50,6 @@ def model_selection(results, metrics, main_metric, aggregation_method=default_pa
     ----------
     results : pd.DataFrame
         Evaluations of the performance of approaches on different data folds.
-    metrics : list
-        Name of columns corresponding to metrics in 'results' dataframe.
     main_metric : str
         Name of the main metric (the one that has to be maximized).
     aggregation_method : str
@@ -64,7 +69,7 @@ def model_selection(results, metrics, main_metric, aggregation_method=default_pa
     # Apply conditions to results of individual folds.
     results_selected = apply_condition_to_dataframe(results, results_condition)
     # Combine results of different folds.
-    combined_results = combine_fold_results(results_selected, metrics, aggregation_method=aggregation_method)
+    combined_results = combine_fold_results(results_selected, aggregation_method=aggregation_method)
     # Apply conditions to combined results.
     combined_results_selected = apply_condition_to_dataframe(combined_results, combined_results_condition)
     # Create ranking.

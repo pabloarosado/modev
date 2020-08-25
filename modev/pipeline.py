@@ -3,13 +3,18 @@
 """
 import logging
 
+from modev import common
 from modev import default_pars
 from modev import execution
 from modev import plotting
+from modev import templates
 from modev import validation
 from modev.templates import default
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.WARNING)
+app_name_key = default_pars.approach_name_key
+function_key = default_pars.function_key
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.WARNING)
 
 
 def _check_requirements(previous_requirements, error_message):
@@ -17,21 +22,20 @@ def _check_requirements(previous_requirements, error_message):
         logging.error(error_message)
 
 
-def _split_function_and_pars(inputs, function_key=default_pars.function_key):
+def _split_function_and_pars(inputs):
     function = inputs[function_key]
     pars = {par: inputs[par] for par in inputs if par != function_key}
     return function, pars
 
 
-def _split_approaches_function_and_pars(approaches, function_key=default_pars.function_key,
-                                        app_name_key=default_pars.approach_name_key):
+def _split_approaches_function_and_pars(approaches):
     function = {app[app_name_key]: app[function_key] for app in approaches}
     pars = {app[app_name_key]: {par: app[par] for par in app if par not in [function_key, app_name_key]}
             for app in approaches}
     return function, pars
 
 
-def _override_default_inputs(given_inputs, default_inputs, function_key=default_pars.function_key):
+def _override_default_inputs(given_inputs, default_inputs):
     # If function_key is not given in pars, default function will be used.
     # Therefore, ensure all required parameters are taken from default, except the ones explicitly given in pars.
     if given_inputs is None:
@@ -136,8 +140,6 @@ class Pipeline:
         self.selection_function, self.selection_pars = _split_function_and_pars(selection_inputs)
         self.approaches_function, self.approaches_pars = _split_approaches_function_and_pars(approaches_inputs)
         # Initialise other attributes.
-        self.metrics = self.evaluation_pars['metrics']
-        self.main_metric = self.selection_pars['main_metric']
         self.data = None
         self.indexes = None
         self.results = None
@@ -166,7 +168,7 @@ class Pipeline:
     def get_results(self, reload=False):
         _check_requirements([self.data, self.indexes], self.requirements_error_message)
         if self.results is None or reload:
-            self.results = execution.run_experiment(self.data, self.indexes, self.validation_pars,
+            self.results = execution.run_experiment(self.data, self.indexes,
                                                     self.execution_function, self.execution_pars,
                                                     self.evaluation_function, self.evaluation_pars,
                                                     self.exploration_function, self.approaches_function,
@@ -174,9 +176,9 @@ class Pipeline:
         return self.results
 
     def get_selected_models(self, reload=False):
-        _check_requirements([self.data, self.results], self.requirements_error_message)
+        _check_requirements([self.results], self.requirements_error_message)
         if self.ranking is None or reload:
-            self.ranking = self.selection_function(self.results, self.metrics, **self.selection_pars)
+            self.ranking = self.selection_function(self.results, **self.selection_pars)
         return self.ranking
 
     def run(self, reload=False):
@@ -192,5 +194,9 @@ class Pipeline:
 
         return self.ranking
 
-    def plot_results(self):
-        plotting.metric_vs_folds(self.results, self.main_metric)
+    def plot_results(self, metrics=None):
+        _check_requirements([self.results], self.requirements_error_message)
+        if metrics is None:
+            metrics = common.get_metrics_from_results(self.results)
+        for metric in metrics:
+            plotting.metric_vs_folds(self.results, metric)

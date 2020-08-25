@@ -55,7 +55,7 @@ The pipeline will load two dummy approaches (which can be accessed on ```pipe.ap
 parameters (which can be accessed on ```pipe.approaches_pars```).
 For each fold, these approaches will be fitted to the train set and predict the 'color' of the examples on the dev sets.
 
-The metrics used to evaluate the performance of the approaches are listed in ```pipe.metrics```.
+The metrics used to evaluate the performance of the approaches are listed in ```pipe.evaluation_pars['metrics']```.
 
 An exhaustive grid search is performed, to get all possible combinations of the parameters of each of the approaches. 
 The performance of each of these combinations on each fold can be accessed on:
@@ -63,10 +63,11 @@ The performance of each of these combinations on each fold can be accessed on:
 pipe.get_results()
 ```
 
-To plot these results per fold:
+To plot these results per fold for each of the metrics:
 ```
 pipe.plot_results()
 ```
+To plot only a certain list of metrics, this list can be given as an argument of this function.
 
 To get the final ranking of best approaches (after combining the results of different folds):
 ```

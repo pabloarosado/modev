@@ -21,7 +21,7 @@ def apply_selection_to_data(data, selection):
 
 def count_rows(data_file):
     with open(data_file) as f:
-        num_rows = sum(1 for line in f)
+        num_rows = sum(1 for _ in f)
     return num_rows
 
 

@@ -1,22 +1,28 @@
 """Functions related to the execution of the pipeline.
 
 """
+import numpy as np
 from tqdm.auto import tqdm
 
 from modev import default_pars
 
+approach_key = default_pars.approach_key
+dev_key = default_pars.dev_key
+fold_key = default_pars.fold_key
+function_key = default_pars.function_key
+pars_key = default_pars.pars_key
+playground_key = default_pars.playground_key
+test_key = default_pars.test_key
+train_key = default_pars.train_key
 
-def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.execution_pars_test_mode,
-                             train_name=default_pars.train_key,
-                             dev_name=default_pars.dev_key,
-                             test_name=default_pars.test_key,
-                             playground_name=default_pars.playground_key):
+
+def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.execution_pars_test_mode):
     if test_mode:
-        train_set = data.loc[indexes[playground_name]]
-        test_set = data.loc[indexes[f'{test_name}_{fold}']]
+        train_set = data.loc[indexes[playground_key]]
+        test_set = data.loc[indexes[f'{test_key}_{fold}']]
     else:
-        train_set = data.loc[indexes[f'{train_name}_{fold}']]
-        test_set = data.loc[indexes[f'{dev_name}_{fold}']]
+        train_set = data.loc[indexes[f'{train_key}_{fold}']]
+        test_set = data.loc[indexes[f'{dev_key}_{fold}']]
     return train_set, test_set
 
 
@@ -26,29 +32,37 @@ def separate_predictors_and_target(data_set, target_col):
     return data_set_x, data_set_y
 
 
-def _get_approaches_functions_from_grid(approaches_grid, function_key=default_pars.function_key):
+def _get_approaches_functions_from_grid(approaches_grid):
     approaches_functions = {app_name: approaches_grid[app_name][function_key] for app_name in approaches_grid}
     return approaches_functions
 
 
-def run_experiment(data, indexes, validation_pars, execution_function, execution_pars, evaluation_function,
-                   evaluation_pars, exploration_function, approaches_function, approaches_pars,
-                   fold_key=default_pars.fold_key,
-                   pars_key=default_pars.pars_key,
-                   approach_key=default_pars.approach_key):
+def _add_metrics_to_pars_folds(i, pars_folds, results):
+    for metric in results:
+        if metric not in pars_folds.columns:
+            pars_folds[metric] = np.nan
+        pars_folds.loc[i, metric] = results[metric]
+
+
+def _get_list_of_sets_from_indexes(indexes, set_name):
+    list_of_sets = [int(part.split('_')[-1]) for part in indexes if part.startswith(set_name)]
+    return list_of_sets
+
+
+def run_experiment(data, indexes, execution_function, execution_pars, evaluation_function, evaluation_pars,
+                   exploration_function, approaches_function, approaches_pars):
     # Extract all necessary info from experiment.
-    metrics = evaluation_pars['metrics']
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
 
     # Get list of folds to execute.
     if test_mode:
-        folds = list(range(validation_pars['test_n_sets']))
+        folds = _get_list_of_sets_from_indexes(indexes, test_key)
     else:
-        folds = list(range(validation_pars['playground_n_folds']))
+        folds = _get_list_of_sets_from_indexes(indexes, dev_key)
 
     # Initialise parameter space explorer.
-    explorer = exploration_function(approaches_pars, folds, metrics)
+    explorer = exploration_function(approaches_pars, folds)
     pars_folds = explorer.initialise_results()
     n_iterations = explorer.select_executions_left()
 
@@ -71,13 +85,12 @@ def run_experiment(data, indexes, validation_pars, execution_function, execution
         # Evaluate predictions.
         results = evaluation_function(list(test_y), list(predictions), **evaluation_pars)
 
-        # Write results for these parameters and fold.
-        for metric in results:
-            pars_folds.loc[i, metric] = results[metric]
+        # Ensure metrics columns exist in pars_folds and write results for these parameters and fold.
+        _add_metrics_to_pars_folds(i, pars_folds, results)
     return pars_folds
 
 
-def execute_model(approach_function, approach_pars, train_x, train_y, test_x, **kwargs):
+def execute_model(approach_function, approach_pars, train_x, train_y, test_x, **_kwargs):
     """Execution method (including training and prediction) for an approach.
 
     This function takes an approach 'approach_function' with parameters 'approach_pars', a train set (with predictors
