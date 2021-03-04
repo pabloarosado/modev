@@ -2,6 +2,7 @@
 
 """
 import itertools
+
 import numpy as np
 import pandas as pd
 
@@ -45,7 +46,7 @@ def expand_name_and_parameter_grids(approaches_pars):
 
 
 class GridSearch:
-    def __init__(self, approaches_pars: dict, folds: list):
+    def __init__(self, approaches_pars: dict, folds: list, results: pd.DataFrame = None):
         """Grid search exploration of the parameter space.
 
         Parameters
@@ -56,30 +57,31 @@ class GridSearch:
             parameter values to explore.
         folds : list
             List of folds (e.g. [0, 1, 2, 3]).
+        results : pd.DataFrame or None
+            Existing results to load; None to initialise results from scratch.
 
         """
         self.approaches_pars = approaches_pars
         self.folds = folds
-        self.pars_folds = None
+        self.pars_folds = results
         self.selection_to_execute = None
         self.next_point_generator = None
 
     def initialise_results(self):
-        # TODO: Generalise this to save to/load from file.
-        app_names, app_pars = expand_name_and_parameter_grids(self.approaches_pars)
-        app_ids = np.arange(len(app_pars))
-        # Repeat each pars combination for each fold.
-        pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=[default_pars.pars_key])
-        pars_folds[default_pars.approach_key] = np.repeat(app_names, len(self.folds))
-        pars_folds[default_pars.id_key] = np.repeat(app_ids, len(self.folds))
-        pars_folds[default_pars.fold_key] = np.tile(self.folds, len(app_pars))
-        # Add a column for each of the evaluation metrics.
-        self.pars_folds = pars_folds
+        if self.pars_folds is None:
+            app_names, app_pars = expand_name_and_parameter_grids(self.approaches_pars)
+            app_ids = np.arange(len(app_pars))
+            # Repeat each pars combination for each fold.
+            self.pars_folds = pd.DataFrame(np.repeat(app_pars, len(self.folds)), columns=[default_pars.pars_key])
+            self.pars_folds[default_pars.approach_key] = np.repeat(app_names, len(self.folds))
+            self.pars_folds[default_pars.id_key] = np.repeat(app_ids, len(self.folds))
+            self.pars_folds[default_pars.fold_key] = np.tile(self.folds, len(app_pars))
+            # Mark all rows as not executed.
+            self.pars_folds[default_pars.executed_key] = False
         return self.pars_folds
 
     def select_executions_left(self):
-        # TODO: Select not executed: unexplored_sel = self.pars_folds['executed'].isnull()
-        self.selection_to_execute = np.ones(len(self.pars_folds), dtype=bool)
+        self.selection_to_execute = ~self.pars_folds[default_pars.executed_key]
         n_iterations = len(self.selection_to_execute[self.selection_to_execute])
         return n_iterations
 
