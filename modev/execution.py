@@ -30,7 +30,7 @@ def _get_train_and_test_sets(data, indexes, fold, test_mode=default_pars.executi
 
 
 def separate_predictors_and_target(data_set, target_col):
-    data_set_x = data_set.drop(columns=target_col).values
+    data_set_x = data_set.drop(columns=target_col)
     data_set_y = data_set[target_col].values
     return data_set_x, data_set_y
 
@@ -94,7 +94,7 @@ def run_experiment(data, indexes, execution_function, execution_pars, evaluation
         predictions = execution_function(approach_function, approach_pars, train_x, train_y, test_x, **execution_pars)
 
         # Evaluate predictions.
-        results = evaluation_function(list(test_y), list(predictions), **evaluation_pars)
+        results = evaluation_function(test_y, predictions, **evaluation_pars)
 
         # Ensure metrics columns exist in pars_folds and write results for these parameters and fold.
         _add_metrics_to_pars_folds(i, pars_folds, results)
