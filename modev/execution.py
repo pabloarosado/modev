@@ -1,7 +1,10 @@
 """Functions related to the execution of the pipeline.
 
 """
+import os
+
 import numpy as np
+import pandas as pd
 from tqdm.auto import tqdm
 
 from modev import default_pars
@@ -50,7 +53,8 @@ def _get_list_of_sets_from_indexes(indexes, set_name):
 
 
 def run_experiment(data, indexes, execution_function, execution_pars, evaluation_function, evaluation_pars,
-                   exploration_function, approaches_function, approaches_pars):
+                   exploration_function, approaches_function, approaches_pars, results_file=None,
+                   save_every=default_pars.save_every, reload=False):
     # Extract all necessary info from experiment.
     target = execution_pars['target']
     test_mode = execution_pars['test_mode']
@@ -61,12 +65,19 @@ def run_experiment(data, indexes, execution_function, execution_pars, evaluation
     else:
         folds = _get_list_of_sets_from_indexes(indexes, dev_key)
 
+    # Optionally (if an existing results_file is given) load results from file; if reload is True, ignore that file.
+    if (results_file is not None) and os.path.isfile(results_file) and not reload:
+        pars_folds = pd.read_csv(results_file)
+        pars_folds[default_pars.pars_key] = [eval(row) for row in pars_folds[default_pars.pars_key]]
+    else:
+        pars_folds = None
+
     # Initialise parameter space explorer.
-    explorer = exploration_function(approaches_pars, folds)
+    explorer = exploration_function(approaches_pars, folds, pars_folds)
     pars_folds = explorer.initialise_results()
     n_iterations = explorer.select_executions_left()
 
-    for _ in tqdm(range(n_iterations)):
+    for iteration in tqdm(range(n_iterations)):
         i, row = explorer.get_next_point()
         # Extract all necessary info from this row.
         fold = row[fold_key]
@@ -87,6 +98,17 @@ def run_experiment(data, indexes, execution_function, execution_pars, evaluation
 
         # Ensure metrics columns exist in pars_folds and write results for these parameters and fold.
         _add_metrics_to_pars_folds(i, pars_folds, results)
+
+        # Mark current row as executed.
+        pars_folds.loc[i, default_pars.executed_key] = True
+
+        # Optionally save temporary results to file.
+        if results_file is not None and ((iteration + 1) % save_every == 0):
+            pars_folds.to_csv(results_file, index=False)
+
+    # Optionally save finished results to file.
+    if results_file is not None:
+        pars_folds.to_csv(results_file, index=False)
     return pars_folds
 
 

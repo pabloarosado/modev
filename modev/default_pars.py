@@ -7,6 +7,7 @@ approach_key = 'approach'
 approach_name_key = 'approach_name'
 dev_key = 'dev'
 example_data_path = pkg_resources.resource_filename(__name__, 'data/example_labeled_data.csv')
+executed_key = 'executed'
 fixed_pars_key = 'fixed_pars'
 fold_key = 'fold'
 function_key = 'function'
@@ -14,6 +15,7 @@ id_key = 'id'
 pars_key = 'pars'
 playground_key = 'playground'
 random_state = 1000
+save_every = 10
 test_key = 'test'
 train_key = 'train'
 
