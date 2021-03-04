@@ -57,7 +57,9 @@ class Pipeline:
                  evaluation_inputs=None,
                  exploration_inputs=None,
                  selection_inputs=None,
-                 approaches_inputs=None):
+                 approaches_inputs=None,
+                 results_file=None,
+                 save_every=10):
         """Model development pipeline.
 
         The arguments accepted by Pipeline refer to the usual ingredients in a data science project (data loading,
@@ -96,6 +98,11 @@ class Pipeline:
             * 'function': Actual approach (usually, a class with 'fit' and 'predict' methods).
             * Any other given key will be assumed to be arguments of the approach.
             See documentation of default approaches (approaches.DummyPredictor and approaches.RandomChoicePredictor).
+        results_file : str or None
+            Optional path to local file where to store (temporary or finished) results.
+        save_every : int
+            Save temporary results to file every save_every consecutive iterations. Only relevant if results_file is
+            not None.
 
         Examples
         --------
@@ -144,6 +151,8 @@ class Pipeline:
         self.indexes = None
         self.results = None
         self.ranking = None
+        self.results_file = results_file
+        self.save_every = save_every
 
     requirements_error_message = "Methods have to be executed in the following order:" \
                                  "(1) get_data()" \
@@ -167,12 +176,12 @@ class Pipeline:
 
     def get_results(self, reload=False):
         _check_requirements([self.data, self.indexes], self.requirements_error_message)
+
         if self.results is None or reload:
-            self.results = execution.run_experiment(self.data, self.indexes,
-                                                    self.execution_function, self.execution_pars,
-                                                    self.evaluation_function, self.evaluation_pars,
-                                                    self.exploration_function, self.approaches_function,
-                                                    self.approaches_pars)
+            self.results = execution.run_experiment(
+                self.data, self.indexes, self.execution_function, self.execution_pars, self.evaluation_function,
+                self.evaluation_pars, self.exploration_function, self.approaches_function, self.approaches_pars,
+                results_file=self.results_file, save_every=self.save_every, reload=reload)
         return self.results
 
     def get_selected_models(self, reload=False):

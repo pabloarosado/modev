@@ -21,8 +21,7 @@ cd modev
 python setup.py install
 ```
 
-I'll try to upload it to conda too.
-If I'm successful, you should be able to install it by doing:
+Otherwise you can install from conda:
 ```
 conda install -c pablorosado modev
 ```

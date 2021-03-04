@@ -30,9 +30,9 @@ class DummyPredictor:
 
         Parameters
         ----------
-        train_x : array_like
+        train_x : pd.DataFrame
             Predictor values of the train set. Ignored for this approach.
-        train_y : array_like
+        train_y : np.array
             Target values of the train set. Ignored for this approach.
 
         Returns
@@ -47,12 +47,12 @@ class DummyPredictor:
 
         Parameters
         ----------
-        test_x : array_like
+        test_x : pd.DataFrame
             Predictor values of the test set.
 
         Returns
         -------
-        prediction : array_like
+        prediction : np.array
             Predicted target values of the test set.
 
         """
@@ -85,9 +85,9 @@ class RandomChoicePredictor:
 
         Parameters
         ----------
-        train_x : array_like
+        train_x : pd.DataFrame
             Predictor values of the train set. Ignored for this approach.
-        train_y : array_like
+        train_y : np.array
             Target values of the train set. They will be used as possible choices for randomly picking predictions.
 
         Returns
@@ -103,12 +103,12 @@ class RandomChoicePredictor:
 
         Parameters
         ----------
-        test_x : array_like
+        test_x : pd.DataFrame
             Predictor values of the test set.
 
         Returns
         -------
-        prediction : array_like
+        prediction : np.array
             Predicted target values of the test set.
 
         """
