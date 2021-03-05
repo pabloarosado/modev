@@ -148,7 +148,8 @@ class Pipeline:
         self.approaches_function, self.approaches_pars = _split_approaches_function_and_pars(approaches_inputs)
         # Initialise other attributes.
         self.data = None
-        self.indexes = None
+        self.train_indexes = None
+        self.test_indexes = None
         self.results = None
         self.ranking = None
         self.results_file = results_file
@@ -168,20 +169,18 @@ class Pipeline:
 
     def get_indexes(self, reload=False):
         _check_requirements([self.data], self.requirements_error_message)
-        if self.indexes is None or reload:
-            self.indexes = self.validation_function(self.data.index, **self.validation_pars)
-            if not validation.validate_indexes(self.indexes):
-                logging.warning("Indexes do not pass validations!")
-        return self.indexes
+        if (self.train_indexes is None and self.test_indexes is None) or reload:
+            self.train_indexes, self.test_indexes = self.validation_function(self.data.index, **self.validation_pars)
+        return self.train_indexes, self.test_indexes
 
     def get_results(self, reload=False):
-        _check_requirements([self.data, self.indexes], self.requirements_error_message)
+        _check_requirements([self.data, self.train_indexes, self.test_indexes], self.requirements_error_message)
 
         if self.results is None or reload:
             self.results = execution.run_experiment(
-                self.data, self.indexes, self.execution_function, self.execution_pars, self.evaluation_function,
-                self.evaluation_pars, self.exploration_function, self.approaches_function, self.approaches_pars,
-                results_file=self.results_file, save_every=self.save_every, reload=reload)
+                self.data, self.train_indexes, self.test_indexes, self.execution_function, self.execution_pars,
+                self.evaluation_function, self.evaluation_pars, self.exploration_function, self.approaches_function,
+                self.approaches_pars, results_file=self.results_file, save_every=self.save_every, reload=reload)
         return self.results
 
     def get_selected_models(self, reload=False):

@@ -32,24 +32,11 @@ def _add_metrics_to_pars_folds(i, pars_folds, results):
         pars_folds.loc[i, metric] = results[metric]
 
 
-def _get_list_of_sets_from_indexes(indexes, set_name):
-    list_of_sets = [int(part.split('_')[-1]) for part in indexes if part.startswith(set_name)]
-    return list_of_sets
-
-
-def run_experiment(data, indexes, execution_function, execution_pars, evaluation_function, evaluation_pars,
-                   exploration_function, approaches_function, approaches_pars, results_file=None,
+def run_experiment(data, train_indexes, test_indexes, execution_function, execution_pars, evaluation_function,
+                   evaluation_pars, exploration_function, approaches_function, approaches_pars, results_file=None,
                    save_every=default_pars.save_every, reload=False):
-    # Extract all necessary info from experiment.
-    # TODO: Refactor so that execution_pars doesn't need to be loaded outside of execution_function.
-    #  Possibly, test_mode could be a parameter of validation, so run_experiment would receive only relevant indexes.
-    test_mode = execution_pars['test_mode']
-
     # Get list of folds to execute.
-    if test_mode:
-        folds = _get_list_of_sets_from_indexes(indexes, test_key)
-    else:
-        folds = _get_list_of_sets_from_indexes(indexes, dev_key)
+    folds = list(test_indexes)
 
     # Optionally (if an existing results_file is given) load results from file; if reload is True, ignore that file.
     if (results_file is not None) and os.path.isfile(results_file) and not reload:
@@ -72,7 +59,7 @@ def run_experiment(data, indexes, execution_function, execution_pars, evaluation
         approach_function = approaches_function[approach_name]
         model = approach_function(**approach_pars)
 
-        train_set, test_set = common.get_train_and_test_sets(data, indexes, fold, test_mode)
+        train_set, test_set = common.get_train_and_test_sets(data, train_indexes, test_indexes, fold)
 
         # Fit and predict with approach.
         truth, prediction = execution_function(model, train_set, test_set, **execution_pars)
@@ -106,25 +93,24 @@ def execute_model(model, train_set, test_set, target, **_kwargs):
 
     Parameters
     ----------
-    approach_function : class
-        Approach that contains a 'fit' method (to fit approach on train set) and a 'predict' method (to predict on the
-        test set).
-    approach_pars : dict
-        Parameters for the approach.
-    train_x : array_like
-        Predictors for the train set.
-    train_y : array_like
-        Target values for the train set.
-    test_x : array_like
-        Predictors for the test set (or dev set).
+    model : model object
+        Approach (already initialised with approach parameters) that contains a 'fit' method (to fit approach on train
+        set) and a 'predict' method (to predict on the test set).
+    train_set : pd.DataFrame
+        Train set (with predictors and target). More correctly, this could be a train set or a playground set.
+    test_set : pd.DataFrame
+        Test set (with predictors and target). More correctly, this could be a dev set or a test set.
+    target : str
+        Name of target column in both train_set and test_set.
 
     Returns
     -------
-    predictions: array_like
-        Predictions for the test set (or dev set).
+    test_y : np.array
+        True values of the target in the dev (or test) set.
+    predictions: np.array
+        Predicted values of the target in the dev (or test) set.
 
     """
-    # Get train_* and test_* sets.
     train_x, train_y = common.separate_predictors_and_target(train_set, target)
     test_x, test_y = common.separate_predictors_and_target(test_set, target)
     model.fit(train_x, train_y)

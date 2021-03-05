@@ -20,13 +20,13 @@ def get_metrics_from_results(results):
     return metrics
 
 
-def get_train_and_test_sets(data, indexes, fold, test_mode):
-    if test_mode:
-        train_set = data.loc[indexes[playground_key]]
-        test_set = data.loc[indexes[f'{test_key}_{fold}']]
+def get_train_and_test_sets(data, train_indexes, test_indexes, fold):
+    # TODO: Instead of this, in test_mode, repeat playground so that train and test sets have the same number of keys.
+    if len(train_indexes) == 1:
+        train_set = data.loc[train_indexes[0]]
     else:
-        train_set = data.loc[indexes[f'{train_key}_{fold}']]
-        test_set = data.loc[indexes[f'{dev_key}_{fold}']]
+        train_set = data.loc[train_indexes[fold]]
+    test_set = data.loc[test_indexes[fold]]
     return train_set, test_set
 
 
