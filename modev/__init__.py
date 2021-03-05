@@ -11,3 +11,5 @@ import modev.selection
 import modev.utils
 import modev.templates
 import modev.validation
+__version__ = "0.3.0"
+__author__ = "Pablo Rosado"
