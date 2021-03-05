@@ -1,13 +1,12 @@
 import setuptools
-import modev
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="modev",
-    version=modev.__version__,
-    author=modev.__author__,
+    version="0.3.1",
+    author="Pablo Rosado",
     author_email="mail@pablorosado.com",
     description="Model Development for Data Science Projects.",
     keywords=["modev", "Data Science", "Machine Learning", "Modeling"],
