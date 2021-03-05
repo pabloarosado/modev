@@ -11,5 +11,5 @@ import modev.selection
 import modev.utils
 import modev.templates
 import modev.validation
-__version__ = "0.3.0"
+from modev._version import __version__
 __author__ = "Pablo Rosado"
