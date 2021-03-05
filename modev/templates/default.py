@@ -19,10 +19,10 @@ validation_inputs = {default_pars.function_key: validation.k_fold_playground_n_t
                      'test_n_sets': default_pars.validation_pars_test_n_sets,
                      'playground_n_folds': default_pars.validation_pars_playground_n_folds,
                      'random_state': default_pars.random_state,
+                     'test_mode': default_pars.validation_pars_test_mode,
                      }
 execution_inputs = {default_pars.function_key: execution.execute_model,
-                    'target': 'color',
-                    'test_mode': False}
+                    'target': 'color'}
 evaluation_inputs = {default_pars.function_key: evaluation.evaluate_predictions,
                      'metrics': ['accuracy'],
                      }
