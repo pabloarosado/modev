@@ -25,8 +25,6 @@ etl_pars_selection = None
 
 evaluation_pars_num_predictions = None
 
-execution_pars_test_mode = False
-
 exploration_pars_fixed_pars = None
 
 plotting_pars_added_cols_hover = None
@@ -48,6 +46,7 @@ validation_pars_labels = None
 validation_pars_playground_n_folds = 4
 validation_pars_return_original_indexes = True
 validation_pars_shuffle = True
+validation_pars_test_mode = False
 # Default validation pars for temporal-fold cross-validation:
 validation_min_n_train_examples = 10
 validation_dev_n_sets = 4

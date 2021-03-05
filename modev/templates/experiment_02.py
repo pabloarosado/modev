@@ -8,6 +8,7 @@ experiment = {'validation_inputs': {'function': temporal_fold_playground_n_tests
                                     'dev_n_sets': 4,
                                     'test_fraction': 0.5,
                                     'test_n_sets': 2,
+                                    'test_mode': False,
                                     },
               'evaluation_inputs': {'metrics': ['precision', 'recall', 'f1'],
                                     'average': 'micro',
