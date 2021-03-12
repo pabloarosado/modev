@@ -14,10 +14,12 @@ function_key = 'function'
 id_key = 'id'
 pars_key = 'pars'
 playground_key = 'playground'
+prediction_key = 'prediction'
 random_state = 1000
 save_every = 10
 test_key = 'test'
 train_key = 'train'
+truth_key = 'truth'
 
 etl_pars_header_nrows = 1
 etl_pars_sample_nrows = None

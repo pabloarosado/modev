@@ -30,15 +30,13 @@ def prepare_true_and_pred(raw_true, raw_pred):
     return raw_true, raw_pred
 
 
-def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
+def evaluate_predictions(execution_results, metrics, **kwargs):
     """Evaluate predictions, given ground truth, using a list of metrics.
 
     Parameters
     ----------
-    raw_true : np.array
-        Ground truth.
-    raw_pred : np.array
-        Predictions (either booleans, labels, or probabilities, depending on the metric).
+    execution_results : dict
+        Execution results as returned by execution inputs function. It must contain a 'truth' and a 'prediction' key.
     metrics : list
         Metrics to use for evaluation. Implemented methods include:
          * 'precision': usual precision in classification problems.
@@ -57,6 +55,7 @@ def evaluate_predictions(raw_true, raw_pred, metrics, **kwargs):
         Results of evaluation. Each element in the dictionary corresponds to one of the metrics.
 
     """
+    raw_true, raw_pred = execution_results[default_pars.truth_key], execution_results[default_pars.prediction_key]
     true, pred = prepare_true_and_pred(raw_true, raw_pred)
 
     results = {}
