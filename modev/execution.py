@@ -59,16 +59,23 @@ def run_experiment(data, train_indexes, test_indexes, execution_function, execut
         approach_function = approaches_function[approach_name]
         model = approach_function(**approach_pars)
 
-        train_set, test_set = common.get_train_and_test_sets(data, train_indexes, test_indexes, fold)
+        # TODO: In test_mode, repeat playground so that train and test sets always have the same number of keys. Then
+        #  remove the following condition.
+        if len(train_indexes) == 1:
+            fold_train_indexes = train_indexes[0]
+        else:
+            fold_train_indexes = train_indexes[fold]
+        fold_test_indexes = test_indexes[fold]
 
         # Fit and predict with approach.
-        truth, prediction = execution_function(model, train_set, test_set, **execution_pars)
+        execution_results = execution_function(
+            model, data, fold_train_indexes, fold_test_indexes, **execution_pars)
 
         # Evaluate predictions.
-        results = evaluation_function(truth, prediction, **evaluation_pars)
+        evaluation_results = evaluation_function(execution_results, **evaluation_pars)
 
         # Ensure metrics columns exist in pars_folds and write results for these parameters and fold.
-        _add_metrics_to_pars_folds(i, pars_folds, results)
+        _add_metrics_to_pars_folds(i, pars_folds, evaluation_results)
 
         # Mark current row as executed.
         pars_folds.loc[i, default_pars.executed_key] = True
@@ -83,7 +90,7 @@ def run_experiment(data, train_indexes, test_indexes, execution_function, execut
     return pars_folds
 
 
-def execute_model(model, train_set, test_set, target, **_kwargs):
+def execute_model(model, data, fold_train_indexes, fold_test_indexes, target, **_kwargs):
     """Execution method (including training and prediction) for an approach.
 
     This function takes an approach 'approach_function' with parameters 'approach_pars', a train set (with predictors
@@ -96,24 +103,38 @@ def execute_model(model, train_set, test_set, target, **_kwargs):
     model : model object
         Approach (already initialised with approach parameters) that contains a 'fit' method (to fit approach on train
         set) and a 'predict' method (to predict on the test set).
-    train_set : pd.DataFrame
-        Train set (with predictors and target). More correctly, this could be a train set or a playground set.
-    test_set : pd.DataFrame
-        Test set (with predictors and target). More correctly, this could be a dev set or a test set.
+    data : pd.DataFrame
+        Data, as returned by load inputs function.
+    fold_train_indexes : np.array
+        Indexes of train set (or playground set) for current fold.
+    fold_test_indexes : np.array
+        Indexes of dev set (or test set) for current fold.
     target : str
         Name of target column in both train_set and test_set.
 
     Returns
     -------
-    test_y : np.array
-        True values of the target in the dev (or test) set.
-    predictions: np.array
-        Predicted values of the target in the dev (or test) set.
+    execution_results : dict
+        Execution results. It contains:
+        * 'truth': np.array of true values of the target in the dev (or test) set.
+        * 'prediction': np.array of predicted values of the target in the dev (or test) set.
 
     """
+    # A preprocessing method of the model could be applied here:
+    # model.preprocess(data)
+    # That method could select columns to be used as predictors for train x.
+
+    # Select train set and fit model.
+    train_set = data.loc[fold_train_indexes]
     train_x, train_y = common.separate_predictors_and_target(train_set, target)
-    test_x, test_y = common.separate_predictors_and_target(test_set, target)
     model.fit(train_x, train_y)
+
+    # Select test set and predict with model.
+    test_set = data.loc[fold_test_indexes]
+    test_x, test_y = common.separate_predictors_and_target(test_set, target)
     prediction = model.predict(test_x)
 
-    return test_y, prediction
+    # Prepare execution results (other metrics like timing could also be included here).
+    execution_results = {default_pars.truth_key: test_y, default_pars.prediction_key: prediction}
+
+    return execution_results
