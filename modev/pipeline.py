@@ -170,7 +170,7 @@ class Pipeline:
     def get_indexes(self, reload=False):
         _check_requirements([self.data], self.requirements_error_message)
         if (self.train_indexes is None and self.test_indexes is None) or reload:
-            self.train_indexes, self.test_indexes = self.validation_function(self.data.index, **self.validation_pars)
+            self.train_indexes, self.test_indexes = self.validation_function(self.data, **self.validation_pars)
         return self.train_indexes, self.test_indexes
 
     def get_results(self, reload=False):
