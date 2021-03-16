@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="modev",
-    version="0.4.0",
+    version="0.5.0",
     author="Pablo Rosado",
     author_email="mail@pablorosado.com",
     description="Model Development for Data Science Projects.",

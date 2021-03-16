@@ -98,7 +98,7 @@ def temporal_folds_split(raw_indexes, min_n_train_examples, dev_n_sets):
     return parts
 
 
-def one_set_n_sets_split(raw_indexes, test_fraction, test_n_sets, first_set_name, second_set_name,
+def one_set_n_sets_split(data, test_fraction, test_n_sets, first_set_name, second_set_name,
                          labels=default_pars.validation_pars_labels, shuffle=default_pars.validation_pars_shuffle,
                          random_state=default_pars.random_state):
     """Splits a raw set of indexes into one set (e.g. a playground) and n sets (e.g. test sets).
@@ -110,8 +110,8 @@ def one_set_n_sets_split(raw_indexes, test_fraction, test_n_sets, first_set_name
 
     Parameters
     ----------
-    raw_indexes : array_like
-        Indexes of data (e.g. data.index, assuming data is a pandas dataframe).
+    data : pd.DataFrame
+        Indexed data (e.g. a dataframe whose index can be accessed with data.index).
     test_fraction : float
         Fraction of data to use for test sets.
     test_n_sets : int
@@ -135,7 +135,7 @@ def one_set_n_sets_split(raw_indexes, test_fraction, test_n_sets, first_set_name
 
     """
     # To begin with, the raw dataset is train, and there is only one test set (named 'test_0'), which is empty.
-    indexes = {f'{first_set_name}_0': np.array(raw_indexes),
+    indexes = {f'{first_set_name}_0': np.array(data.index),
                f'{second_set_name}_0': np.array([], dtype=int)}
 
     # To avoid warnings, impose random_state None if there is no shuffling.
@@ -178,7 +178,7 @@ def _split_train_and_test_indexes(indexes, test_mode):
     return train_indexes, test_indexes
 
 
-def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars.validation_pars_playground_n_folds,
+def k_fold_playground_n_tests_split(data, playground_n_folds=default_pars.validation_pars_playground_n_folds,
                                     test_fraction=default_pars.validation_pars_test_fraction,
                                     test_n_sets=default_pars.validation_pars_test_n_sets,
                                     labels=default_pars.validation_pars_labels,
@@ -194,8 +194,8 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
 
     Parameters
     ----------
-    raw_indexes : array_like
-        All indexes of data. This could simply be the output of 'data.index' (assuming data is a pandas dataframe).
+    data : pd.DataFrame
+        Indexed data (e.g. a dataframe whose index can be accessed with data.index).
     playground_n_folds : int
         Number of folds to split playground into (also called 'k'), so that there will be k train sets and k dev sets.
     test_fraction : float
@@ -226,7 +226,7 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
     if not shuffle:
         random_state = None
     # Split data set into playground and test set(s).
-    indexes = one_set_n_sets_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
+    indexes = one_set_n_sets_split(data=data, test_fraction=test_fraction, test_n_sets=test_n_sets,
                                    first_set_name=playground_key, second_set_name=test_key,
                                    labels=labels, shuffle=shuffle, random_state=random_state)
     # Split playground into k train and k dev sets.
@@ -242,7 +242,7 @@ def k_fold_playground_n_tests_split(raw_indexes, playground_n_folds=default_pars
     return train_indexes, test_indexes
 
 
-def temporal_fold_playground_n_tests_split(raw_indexes,
+def temporal_fold_playground_n_tests_split(data,
                                            min_n_train_examples=default_pars.validation_min_n_train_examples,
                                            dev_n_sets=default_pars.validation_dev_n_sets,
                                            test_fraction=default_pars.validation_pars_test_fraction,
@@ -261,8 +261,8 @@ def temporal_fold_playground_n_tests_split(raw_indexes,
 
     Parameters
     ----------
-    raw_indexes : array_like
-        All indexes of data. This could simply be the output of 'data.index' (assuming data is a pandas dataframe).
+    data : pd.DataFrame
+        Indexed data (e.g. a dataframe whose index can be accessed with data.index).
     min_n_train_examples : int
         Minimum number of examples in a train set. It will be the exact number of examples of the first train set.
         All subsequent train sets will be larger than the first one.
@@ -287,7 +287,7 @@ def temporal_fold_playground_n_tests_split(raw_indexes,
 
     """
     # Split data set into playground and test set(s) without shuffling or stratifying (so they keep their order).
-    indexes = one_set_n_sets_split(raw_indexes=raw_indexes, test_fraction=test_fraction, test_n_sets=test_n_sets,
+    indexes = one_set_n_sets_split(data=data, test_fraction=test_fraction, test_n_sets=test_n_sets,
                                    first_set_name=playground_key, second_set_name=test_key,
                                    labels=None, shuffle=False, random_state=None)
     # Split playground into k train and k dev temporal folds.
