@@ -109,7 +109,7 @@ An experiment is defined by a dictionary with the following keys:
           This function can have an arbitrary number of mandatory arguments (or none), to be specified in `load_inputs`.
       * Additionally, this function can have an arbitrary number of optional arguments (or none), to be specified in `load_inputs` dictionary.
       * **Outputs this custom function must return**: <br>
-          * `data` : pd.DataFrame
+          * `data` : pd.DataFrame <br>
               Relevant data.
       </details>
 
@@ -160,10 +160,10 @@ An experiment is defined by a dictionary with the following keys:
       * **Outputs this custom function must return**: <br>
           * `train_indexes` : dict
               Indexes to use for training on the different k folds, e.g. for 10 folds: <br>
-              `{'train_0': np.array([...]), 'train_1': np.array([...]), ..., 'train_10': np.array([...])}` <br>
+              `{0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}` <br>
           * `test_indexes` : dict
               Indexes to use for evaluating (either dev or test) on the different k folds, e.g. for 10 folds and if test_mode is False: <br>
-              `{'dev_0': np.array([...]), 'dev_1': np.array([...]), ..., 'dev_10': np.array([...])}`
+              `{0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}`
       </details>
 
 3. `execution_inputs`: Dictionary of inputs related to the execution of approaches.
@@ -172,7 +172,7 @@ An experiment is defined by a dictionary with the following keys:
 
       If `function` is not given, `modev.execution.execute_model` will be used.
       This function defines the execution method (including training and prediction, and any possible preprocessing) for an approach.
-      This function takes an approach `approach_function` with parameters `approach_pars`, a train set (with predictors `train_x` and targets `train_y`) and the predictors of a test set `test_x`, and returns the predicted targets of the test set.
+      This function takes an approach `approach_function` with parameters `approach_pars`, a train set (with predictors `train_x` and targets `train_y`) and the predictors of a test set `test_x`, and returns the predicted targets of the test set. <br>
       Note: Here, `test` refers to either a dev or a test set indistinctly.
       * **Arguments that must be defined in `execution_inputs`**:
           * `target` : str <br>
@@ -186,15 +186,15 @@ An experiment is defined by a dictionary with the following keys:
 
       If the `function` key is contained in the `execution_inputs` dictionary, its value must be a valid function.
       * **Arguments that this custom function must accept**:<br>
-          * `model` : model object
+          * `model` : model object <br>
               Instantiated approach.
-          * `data` : pd.DataFrame
+          * `data` : pd.DataFrame <br>
               Data, as returned by load inputs function.
-          * `fold_train_indexes` : np.array
+          * `fold_train_indexes` : np.array <br>
               Indexes of train set (or playground set) for current fold.
-          * `fold_test_indexes` : np.array
+          * `fold_test_indexes` : np.array <br>
               Indexes of dev set (or test set) for current fold.
-          * `target` : str
+          * `target` : str <br>
               Name of target column in both train_set and test_set.
       * Additionally, this function can have an arbitrary number of optional arguments (or none), to be specified in `execution_inputs` dictionary.
       * **Outputs this custom function must return**: <br>
@@ -291,19 +291,23 @@ An experiment is defined by a dictionary with the following keys:
 
       If the `function` key is contained in the `selection_inputs` dictionary, its value must be a valid function.
       * **Arguments that this custom function must accept**: <br>
-          * `results` : pd.DataFrame
+          * `results` : pd.DataFrame <br>
               Evaluations of the performance of approaches on different data folds (output of function used in `evaluation_inputs`).
       * Additionally, this function can have an arbitrary number of optional arguments (or none), to be specified in `evaluation_inputs` dictionary.
       * **Outputs this custom function must return**: <br>
-          * `combine_results_sorted` : pd.DataFrame
+          * `combine_results_sorted` : pd.DataFrame <br>
               Ranking of results (sorted in descending value of 'main_metric') of approaches that fulfil the imposed conditions.
       </details>
 7. `approaches_inputs`: List of dictionaries, one per approach to be used.
-    Each dictionary in the list has at least two keys:
-    * `approach_name`: Name of the approach.
-    * `function`: Actual approach (usually, a class with 'fit' and 'predict' methods).
-    * Any other key in the dictionary of an approach will be assumed to be an argument of that approach.
-    To see some examples of simple approaches, see `modev.approaches.DummyPredictor` and `modev.approaches.RandomChoicePredictor`.
+    + <details>
+          <summary>Definition of an approach.</summary>
+
+      Each dictionary in the list has at least two keys:
+      * `approach_name`: Name of the approach.
+      * `function`: Actual approach (usually, a class with 'fit' and 'predict' methods).
+      * Any other key in the dictionary of an approach will be assumed to be an argument of that approach. <br>
+      To see some examples of simple approaches, see `modev.approaches.DummyPredictor` and `modev.approaches.RandomChoicePredictor`.
+      </details>
 
 An experiment can be contained in a python module.
 As an example, there is a template experiment in `modev.templates`, that is a small variation with respect to the default experiment.
