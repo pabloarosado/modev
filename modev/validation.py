@@ -215,11 +215,11 @@ def k_fold_playground_n_tests_split(data, playground_n_folds=default_pars.valida
     -------
     train_indexes : dict
         Indexes to use for training on the different k folds, e.g. for 10 folds:
-        {'train_0': np.array([...]), 'train_1': np.array([...]), ..., 'train_10': np.array([...])}.
+        {0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}.
     test_indexes : dict
         Indexes to use for evaluating (either dev or test) on the different k folds, e.g. for 10 folds and if test_mode
         is False:
-        {'dev_0': np.array([...]), 'dev_1': np.array([...]), ..., 'dev_10': np.array([...])}.
+        {0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}.
 
     """
     # To avoid warnings, impose random_state None if there is no shuffling.
@@ -279,11 +279,11 @@ def temporal_fold_playground_n_tests_split(data,
     -------
     train_indexes : dict
         Indexes to use for training on the different k folds, e.g. for 10 folds:
-        {'train_0': np.array([...]), 'train_1': np.array([...]), ..., 'train_10': np.array([...])}.
+        {0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}.
     test_indexes : dict
         Indexes to use for evaluating (either dev or test) on the different k folds, e.g. for 10 folds and if test_mode
         is False:
-        {'dev_0': np.array([...]), 'dev_1': np.array([...]), ..., 'dev_10': np.array([...])}.
+        {0: np.array([...]), 1: np.array([...]), ..., 10: np.array([...])}.
 
     """
     # Split data set into playground and test set(s) without shuffling or stratifying (so they keep their order).
